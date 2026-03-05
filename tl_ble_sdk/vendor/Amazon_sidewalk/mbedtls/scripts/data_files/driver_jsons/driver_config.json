@@ -1,0 +1,75 @@
+{
+    "_comment": "Pure software PSA driver for Amazon Sidewalk",
+    "type": "transparent",
+    "prefix": "sidewalk_sw",
+    
+    "headers": [
+        "psa/crypto.h",
+        "mbedtls/build_info.h"
+    ],
+    
+    "capabilities": [
+        {
+            "mbedtls/c_condition": "defined(MBEDTLS_PSA_ACCEL_KEY_TYPE_AES)",
+            "entry_points": [
+                "import_key",
+                "export_key",
+                "encrypt",
+                "decrypt",
+                "aead_encrypt", 
+                "aead_decrypt"
+            ],
+            "names": {
+                "import_key": "sidewalk_sw_import_key",
+                "export_key": "sidewalk_sw_export_key",
+                "encrypt": "sidewalk_sw_encrypt",
+                "decrypt": "sidewalk_sw_decrypt",
+                "aead_encrypt": "sidewalk_sw_aead_encrypt",
+                "aead_decrypt": "sidewalk_sw_aead_decrypt"
+            },
+            "fallback": false
+        },
+        {
+            "mbedtls/c_condition": "defined(MBEDTLS_PSA_ACCEL_KEY_TYPE_ECC_KEY_PAIR)",
+            "entry_points": [
+                "import_key",
+                "export_key",
+                "export_public_key",
+                "sign_hash",
+                "verify_hash",
+                "sign_message",
+                "verify_message"
+            ],
+            "names": {
+                "import_key": "sidewalk_sw_import_key",
+                "export_key": "sidewalk_sw_export_key",
+                "export_public_key": "sidewalk_sw_export_public_key",
+                "sign_hash": "sidewalk_sw_sign_hash",
+                "verify_hash": "sidewalk_sw_verify_hash",
+                "sign_message": "sidewalk_sw_sign_message",
+                "verify_message": "sidewalk_sw_verify_message"
+            },
+            "fallback": false
+        },
+        {
+            "mbedtls/c_condition": "defined(MBEDTLS_PSA_ACCEL_ALG_SHA_256)",
+            "entry_points": [
+                "hash_compute",
+                "hash_setup",
+                "hash_update",
+                "hash_finish",
+                "hash_abort",
+                "hash_clone"
+            ],
+            "names": {
+                "hash_compute": "sidewalk_sw_hash_compute",
+                "hash_setup": "sidewalk_sw_hash_setup",
+                "hash_update": "sidewalk_sw_hash_update",
+                "hash_finish": "sidewalk_sw_hash_finish",
+                "hash_abort": "sidewalk_sw_hash_abort",
+                "hash_clone": "sidewalk_sw_hash_clone"
+            },
+            "fallback": false
+        }
+    ]
+}

@@ -1,0 +1,64 @@
+/********************************************************************************************************
+ * @file    sid_ble_uuid.h
+ *
+ * @brief   This is the header file for BLE SDK
+ *
+ * @author  BLE GROUP
+ * @date    06,2022
+ *
+ * @par     Copyright (c) 2022, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
+ *
+ *          Licensed under the Apache License, Version 2.0 (the "License");
+ *          you may not use this file except in compliance with the License.
+ *          You may obtain a copy of the License at
+ *
+ *              http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *          Unless required by applicable law or agreed to in writing, software
+ *          distributed under the License is distributed on an "AS IS" BASIS,
+ *          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *          See the License for the specific language governing permissions and
+ *          limitations under the License.
+ *
+ *******************************************************************************************************/
+/** @file sid_ble_service.h
+ *  @brief Bluetooth low energy service API.
+ */
+
+#ifndef SID_PAL_BLE_UUID_H
+#define SID_PAL_BLE_UUID_H
+
+#define AMA_SERVICE_UUID_VAL 0xFE03
+
+#define AMA_CHARACTERISTIC_UUID_VAL_WRITE                                                          \
+    0x3C, 0xC5, 0x61, 0xAB, 0x27, 0x04, 0x32, 0x92, 0x58, 0x4D, 0x6C, 0x7D, 0xC9, 0x96, 0xF9,  \
+        0x74
+
+#define AMA_CHARACTERISTIC_UUID_VAL_NOTIFY                                                         \
+    0xFE, 0xD2, 0xF0, 0xE7, 0xB7, 0x53, 0x15, 0x90, 0xC1, 0x47, 0xCE, 0xFE, 0xC0, 0x83, 0x2E,  \
+        0xB3
+
+#define VND_EXAMPLE_SERVICE_UUID_VAL 0xFE12
+
+#define VND_EXAMPLE_CHARACTERISTIC_UUID_VAL_WRITE                                                  \
+    0xAA, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,  \
+        0x00
+
+#define VND_EXAMPLE_CHARACTERISTIC_UUID_VAL_NOTIFY                                                 \
+    0x9A, 0x8B, 0x7C, 0x6D, 0x5E, 0x4F, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,  \
+        0x00
+
+#define LOG_EXAMPLE_SERVICE_UUID_VAL 0xFE15
+
+#define LOG_EXAMPLE_CHARACTERISTIC_UUID_VAL_WRITE                                                  \
+    0xBB, 0x2B, 0x3C, 0x0D, 0x0E, 0x0F, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,  \
+        0x00
+
+#define LOG_EXAMPLE_CHARACTERISTIC_UUID_VAL_NOTIFY                                                 \
+    0x9A, 0x8B, 0x7C, 0x6D, 0x5E, 0x4F, 0x01, 0x02, 0x03, 0x04, 0xF5, 0xE6, 0xD7, 0xC8, 0xB9,  \
+        0xA0
+
+/** Company Identifiers (see Bluetooth Assigned Numbers) */
+#define BT_COMP_ID_AMA 0x0171
+
+#endif /* SID_PAL_BLE_UUID_H */
