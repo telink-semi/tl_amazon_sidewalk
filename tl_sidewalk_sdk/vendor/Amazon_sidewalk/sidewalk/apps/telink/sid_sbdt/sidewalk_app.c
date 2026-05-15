@@ -1,5 +1,5 @@
 /********************************************************************************************************
- * @file
+ * @file    sidewalk_app.c
  *
  * @brief   This is the source file for BLE SDK
  *
@@ -66,7 +66,9 @@
 
 #define APP_MAX_WRITE_SIZE 256     //shoubld be 16* ,max 240
 
-int blt_ota_save_data(u32 flash_addr, int len, u8 *data);
+
+int blt_all_in_one_otaWrite(int offset,void *p,int len);
+int blt_all_in_one_ota_finish(void);
 int blt_ota_crc_check_whole(int size);
 void blt_ota_writeBootMark(void);
 void app_sbdt_transfer_init(struct sid_handle *handle);
@@ -216,7 +218,7 @@ bool app_platform_flash_write(uint32_t offset, void *data, size_t size)
             flash_erase_sector(blc_ota_getNextFirmwareStartAddress() + ((start + offset + curr_len) & FLASH_SECTOR_MASK));
         }
 
-        ret = blt_ota_save_data(start + offset,curr_len,((uint8_t *)data)+ start);
+        ret = blt_all_in_one_otaWrite(start + offset,((uint8_t *)data)+ start,curr_len);
         if(ret != 0)
         {
            sbdt_file_crc_check_rt = false;
@@ -254,7 +256,7 @@ bool app_platform_flash_finalize(uint32_t size, uint32_t crc)
         #if (APP_FLASH_PROTECTION_ENABLE)
         app_flash_protection_operation(FLASH_OP_EVT_STACK_OTA_WRITE_NEW_FW_BEGIN, 0, 0);
         #endif
-        blt_ota_writeBootMark();
+        blt_all_in_one_ota_finish();
         #if (APP_FLASH_PROTECTION_ENABLE)
         app_flash_protection_operation(FLASH_OP_EVT_STACK_OTA_WRITE_NEW_FW_END, 0, 0);
         #endif
@@ -329,11 +331,11 @@ void Portble_btn_press(u8 key)
 {
     if(KEY1 == key)
     {
-        demo_app_button_event_handler(0);
+        demo_app_button_event_handler(1);
     }
     else if(KEY2 == key)
     {
-        demo_app_button_event_handler(1);
+        demo_app_button_event_handler(3);
     }
     else    if(KEY3 == key)
     {
@@ -341,7 +343,7 @@ void Portble_btn_press(u8 key)
     }
     else
     {
-        demo_app_button_event_handler(3);
+        demo_app_button_event_handler(0);
     }
 }
 
@@ -398,8 +400,11 @@ _attribute_ram_code_ void app_sid_sleep_enter(u8 e, u8 *p, int n)
     (void)e;
     (void)p;
     (void)n;
-    #if (UI_KEYBOARD_ENABLE || UI_BUTTON_ENABLE)
+    #if (UI_KEYBOARD_ENABLE)
     app_set_kb_wakeup(e,p,n);
+    #endif
+    #if (UI_BUTTON_ENABLE)
+    app_set_button_wakeup(e,p,n);
     #endif
     #ifdef CONFIG_SIDEWALK_SUBGHZ_SUPPORT
     app_sid_subg_sleep_enter(e,p,n);

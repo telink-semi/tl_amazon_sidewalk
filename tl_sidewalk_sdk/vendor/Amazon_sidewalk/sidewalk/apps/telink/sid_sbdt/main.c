@@ -172,7 +172,7 @@ _attribute_ram_code_ int main(void)
     #endif
 
     gpio_init(!deepRetWakeUp);
-    #if (JTAG_DEBUG_ENABLE || TLKAPI_RTT_PRINT)
+    #if ((!JTAG_DEBUG_DISABLE) || TLKAPI_RTT_PRINT)
     jtag_set_pin_en();
     #endif
     #if defined(TLK_ONLY_BLE_HOST)

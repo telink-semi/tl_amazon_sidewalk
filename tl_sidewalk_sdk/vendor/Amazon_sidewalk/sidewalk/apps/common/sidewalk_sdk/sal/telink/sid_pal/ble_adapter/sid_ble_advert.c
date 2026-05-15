@@ -66,7 +66,7 @@ typedef enum { SID_BLE_ADV_DISABLE, BLE_ADV_FAST, BLE_ADV_SLOW } sid_ble_adv_sta
 
 //K_WORK_DELAYABLE_DEFINE(change_adv_work, change_advertisement_interval);
 
-_attribute_ble_data_retention_ static  adv_state = SID_BLE_ADV_DISABLE;
+_attribute_ble_data_retention_ static  sid_ble_adv_state_t adv_state = SID_BLE_ADV_DISABLE;
 _attribute_ble_data_retention_ static  uint8_t sid_device_name[] = "SID_APP";
 _attribute_ble_data_retention_ static  uint8_t sid_name_len = 7;
 _attribute_ble_data_retention_ static  uint8_t adv_name_real_len = 7;

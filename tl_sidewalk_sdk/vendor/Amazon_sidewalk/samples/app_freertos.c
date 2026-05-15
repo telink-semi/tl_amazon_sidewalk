@@ -79,7 +79,7 @@ void vApplicationIdleHook(void)
     if(APP_isDeepRetnFlag == pdTRUE)
     {
         APP_isDeepRetnFlag = pdFALSE;
-        #if UI_KEYBOARD_ENABLE
+        #if (UI_KEYBOARD_ENABLE || UI_BUTTON_ENABLE)
         if(hButtonTask){
 
 

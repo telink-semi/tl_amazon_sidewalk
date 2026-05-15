@@ -457,11 +457,12 @@ err:
 static void on_sbdt_finalize_request(uint32_t file_id, void *context)
 {
     SID_PAL_LOG_INFO("%s", __func__);
-    #if (APP_FLASH_PROTECTION_ENABLE)
-    app_flash_protection_operation(FLASH_OP_EVT_STACK_OTA_WRITE_NEW_FW_END, 0, 0);
-    #endif
+
     uint8_t iter = get_instace_by_file_id(file_id);
     if (iter == SBDT_CONCURRENT_SESSIONS) {
+        #if (APP_FLASH_PROTECTION_ENABLE)
+        app_flash_protection_operation(FLASH_OP_EVT_STACK_OTA_WRITE_NEW_FW_END, 0, 0);
+        #endif
         SID_PAL_LOG_ERROR("Invalid file id %d", file_id);
         return;
     }
@@ -497,7 +498,9 @@ static void on_sbdt_finalize_request(uint32_t file_id, void *context)
         SID_PAL_LOG_ERROR("Saving VERSION FAILED: %d", result);
         SID_PAL_LOG_FLUSH();
     }
-
+    #if (APP_FLASH_PROTECTION_ENABLE)
+    app_flash_protection_operation(FLASH_OP_EVT_STACK_OTA_WRITE_NEW_FW_END, 0, 0);
+    #endif
     g_app_context->finalize_on_release = true;
 }
 

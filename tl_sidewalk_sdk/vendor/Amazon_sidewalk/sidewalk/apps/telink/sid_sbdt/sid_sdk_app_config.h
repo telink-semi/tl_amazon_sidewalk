@@ -1,5 +1,5 @@
 /********************************************************************************************************
- * @file
+ * @file    sid_sdk_app_config.h
  *
  * @brief   This is the header file for BLE SDK
  *
@@ -72,7 +72,7 @@ extern "C" {
  * @brief: Enable/Disable link type 3 (LoRa) transmit power control feature
  */
 #ifndef SID_SDK_CONFIG_ENABLE_LINK_TYPE_3_TRANSMIT_POWER_CONTROL
-#define SID_SDK_CONFIG_ENABLE_LINK_TYPE_3_TRANSMIT_POWER_CONTROL 0
+#define SID_SDK_CONFIG_ENABLE_LINK_TYPE_3_TRANSMIT_POWER_CONTROL 1
 #endif
 
 /*

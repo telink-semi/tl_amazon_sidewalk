@@ -154,7 +154,7 @@ int app_sidewalk_init(void);
 _attribute_ram_code_ int main(void)
 {
     DBG_CHN0_LOW;
-    blc_ota_setFirmwareSizeAndBootAddress(500,MULTI_BOOT_ADDR_0x80000);
+    blc_ota_setFirmwareSizeAndBootAddress(400,MULTI_BOOT_ADDR_0x80000);
     /* this function must called before "sys_init()" when:
      * (1). For all IC: using 32K RC for power management,
        (2). For B91 only: even no power management */
@@ -172,7 +172,9 @@ _attribute_ram_code_ int main(void)
     #endif
 
     gpio_init(!deepRetWakeUp);
-
+    #if ((!JTAG_DEBUG_DISABLE) || TLKAPI_RTT_PRINT)
+    jtag_set_pin_en();
+    #endif
     #if defined(TLK_ONLY_BLE_HOST)
     if (deepRetWakeUp) {
         sys_n22_init(N22_IRAM_STARTUP_ADDR);
@@ -184,13 +186,15 @@ _attribute_ram_code_ int main(void)
         tlk_share_memory_service_init();
     #endif
     if (deepRetWakeUp) { //MCU wake_up from deepSleep retention mode
-#if (FREERTOS_ENABLE)
+    #if (FREERTOS_ENABLE)
         extern void vPortRestoreTick(void);
         vPortRestoreTick();
-#endif
+    #endif
        user_init_deepRetn();
+    #ifdef CONFIG_SIDEWALK_SUBGHZ_SUPPORT
        int32_t sid_pal_radio_reinit(void);
         sid_pal_radio_reinit();
+    #endif
     } else { //MCU power_on or wake_up from deepSleep mode
         user_init_normal();
      

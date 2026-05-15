@@ -21,6 +21,7 @@
  *          limitations under the License.
  *
  *******************************************************************************************************/
+
 #ifndef VENDOR_AMAZON_SIDEWALK_SIDEWALK_APPS_TELINK_SID_BLE_SID_SDK_APP_CONFIG_H_
 #define VENDOR_AMAZON_SIDEWALK_SIDEWALK_APPS_TELINK_SID_BLE_SID_SDK_APP_CONFIG_H_
 
@@ -250,7 +251,7 @@ extern "C" {
  * @brief Enable Sidewalk Bulk Data Transfer.
  */
 #ifndef SID_SDK_CONFIG_ENABLE_BULK_DATA_TRANSFER
-#define SID_SDK_CONFIG_ENABLE_BULK_DATA_TRANSFER 0
+#define SID_SDK_CONFIG_ENABLE_BULK_DATA_TRANSFER 1
 #endif
 
 /**
@@ -321,7 +322,7 @@ extern "C" {
  * @brief: Enable/Disable the Sidewalk Location library.
  */
 #ifndef SID_SDK_CONFIG_ENABLE_LOCATION
-#define SID_SDK_CONFIG_ENABLE_LOCATION 0
+#define SID_SDK_CONFIG_ENABLE_LOCATION 1
 #endif
 
 #ifdef __cplusplus

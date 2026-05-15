@@ -93,6 +93,32 @@
 #endif
 
 /**
+ *  @brief  button Configuration
+ */
+#if (UI_BUTTON_ENABLE)
+
+    #if JTAG_DEBUG_DISABLE
+    #define SW1_GPIO                  GPIO_PD5
+    #define PD5_INPUT_ENABLE 1
+    #define PD5_FUNC AS_GPIO
+    #define PULL_WAKEUP_SRC_PD5 PM_PIN_PULLUP_10K
+    #else
+    #define SW1_GPIO                  GPIO_PA7
+    #define PA7_INPUT_ENABLE 1
+    #define PA7_FUNC AS_GPIO
+    #define PULL_WAKEUP_SRC_PA7 PM_PIN_PULLUP_10K
+    #endif
+    #define SW2_GPIO                  GPIO_PD2
+    //#define SW3_GPIO                  GPIO_PA7
+
+    #define PD2_INPUT_ENABLE 1
+    #define PD2_FUNC AS_GPIO
+
+    #define PULL_WAKEUP_SRC_PD2 PM_PIN_PULLUP_10K
+
+#endif
+
+/**
  *  @brief  LED Configuration
  */
 #if UI_LED_ENABLE

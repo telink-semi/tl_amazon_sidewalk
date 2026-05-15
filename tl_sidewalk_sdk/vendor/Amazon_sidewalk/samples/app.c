@@ -775,16 +775,23 @@ _attribute_no_inline_ void user_init_normal(void)
 #if (UI_KEYBOARD_ENABLE)
     keyboard_init();
 #endif
-
+#if (UI_BUTTON_ENABLE)
+    button_init();
+#endif
 
 #if (BLE_OTA_SERVER_ENABLE)
     #if (TLKAPI_DEBUG_ENABLE)
         /* user can enable OTA flow log in BLE stack */
         //blc_debug_addStackLog(STK_LOG_OTA_FLOW);
     #endif
-
+    #if (APP_HW_SECURE_BOOT_ENABLE)
+    /* attention that "blc_ota_enableSecureBoot_in_one" must be called before "blc_ota initOtaServer_module" !!! */
+    blc_ota_enableSecureBoot_in_one();
+    #endif
     blc_ota_initOtaServer_module();
-    blc_ota_setOtaProcessTimeout(30);
+    blc_ota_setOtaProcessTimeout(300);
+
+
 #endif
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -822,6 +829,10 @@ _attribute_ram_code_ void user_init_deepRetn(void)
     }
     #endif
 
+    #if (UI_BUTTON_ENABLE)
+    button_retention_init();
+    #endif
+
     #if (BATT_CHECK_ENABLE)
     adc_hw_initialized = 0;
     #endif
@@ -852,7 +863,9 @@ void app_process_power_management(void)
     #if (UI_KEYBOARD_ENABLE)
         user_task_flg |= user_task_flg || scan_pin_need || key_not_released;
     #endif
-
+    #if (UI_BUTTON_ENABLE)
+        user_task_flg |= user_task_flg || key_not_released;
+     #endif
         if (user_task_flg) {
             bls_pm_setManualLatency(0);
         }
@@ -893,7 +906,7 @@ int main_idle_loop(void)
 #if (UI_KEYBOARD_ENABLE)
     proc_keyboard(0, 0, 0);
 #elif (UI_BUTTON_ENABLE)
-    proc_button();
+    proc_button(0, 0, 0);
 #endif
     void sid_timer_check_timer_start(void);
     sid_timer_check_timer_start();
@@ -936,13 +949,7 @@ int blc_bt_disable(void)
 void app_btn_main_loop(void)
 {
 #if (UI_BUTTON_ENABLE)
-    static u8 button_detect_en = 0;
-    if (!button_detect_en && clock_time_exceed(0, 1000000)) { // process button 1 second later after power on
-        button_detect_en = 1;
-    }
-    if (button_detect_en) {
-        proc_button(); //button triggers pair & unpair  and OTA
-    }
+    proc_button(0, 0, 0);
 #elif (UI_KEYBOARD_ENABLE)
     proc_keyboard(0, 0, 0);
 #endif

@@ -282,12 +282,6 @@ static void ext_32k_timer_start(uint32_t time_tick)
 
 uint32_t roll_ns = 0;
 
-static sid_timer_get_drift(const struct sid_timespec *sid_time,const struct sid_timespec * now)
-{
-    struct sid_timespec drift = SID_TIME_ZERO;
-
-}
-
 static inline void sid_timer_start(struct sid_timespec *sid_time)
 {
 //    TL_LOG_D("sid_timer_start: %d %d",sid_time->tv_sec ,sid_time->tv_nsec);

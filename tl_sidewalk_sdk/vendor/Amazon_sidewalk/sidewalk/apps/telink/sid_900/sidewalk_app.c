@@ -49,7 +49,7 @@
 #include "app_mem.h"
 
 #define KEY1  0x01
-#define KEY2  0x2
+#define KEY2  0x02
 #define KEY3  0xf1
 #define KEY4  0xf0
 
@@ -106,6 +106,8 @@ typedef struct app_context
 static QueueHandle_t g_event_queue;
 
 extern char _end[];
+extern uint32_t _STACK_TOP;
+#define MEMORY_POOL_END    (((uint32_t)&_STACK_TOP) - 0x400)
 
 void * _sbrk(ptrdiff_t incr)
 {
@@ -114,6 +116,10 @@ void * _sbrk(ptrdiff_t incr)
 
   uintptr_t new_heap_end = heap_end + incr;
 
+  if (new_heap_end > MEMORY_POOL_END) {
+    errno = ENOMEM;
+    return (void*) -1;
+  }
   uintptr_t old_heap_end = heap_end;
   heap_end = new_heap_end;
   return (void*) old_heap_end;
@@ -209,7 +215,7 @@ static void on_sidewalk_status_changed(const struct sid_status *status, void *co
             app_context->state = STATE_SIDEWALK_SECURE_CONNECTION;
             break;
     }
-    TL_LOG_I("Registration Status = %d, Time Sync Status = %d and Link Status Mask = %x",
+    tlkapi_printf(1,"Registration Status = %d, Time Sync Status = %d and Link Status Mask = %x",
                  status->detail.registration_status, status->detail.time_sync_status,
                  status->detail.link_status_mask);
      if(status->detail.registration_status)
@@ -393,8 +399,6 @@ static int32_t init_and_start_link(app_context_t *context, struct sid_config *co
     return 0;
 
 error:
-    context->sidewalk_handle = NULL;
-    config->link_mask = 0;
     return -1;
 }
 
@@ -440,7 +444,6 @@ static void main_thread(void *context)
 #endif
     };
 
-    struct sid_handle *sid_handle = NULL;
     if (init_and_start_link(app_context, &config, SID_LINK_TYPE_1) != 0) {
             goto error;
     }
@@ -471,7 +474,7 @@ static void main_thread(void *context)
                 case EVENT_TYPE_CONNECTION_REQUEST:
                     toggle_connection_request(app_context);
                     break;
-#ifdef CONFIG_SIDEWALK_SUBGHZ_SUPPORT
+                #ifdef CONFIG_SIDEWALK_SUBGHZ_SUPPORT
                 case EVENT_TYPE_FSK_CSS_SWITCH:
                     if (config.link_mask == SID_LINK_TYPE_1 || config.link_mask == SID_LINK_TYPE_2) {
                         if (init_and_start_link(app_context, &config, SID_LINK_TYPE_3) != 0) {
@@ -514,19 +517,20 @@ static void main_thread(void *context)
                                   set_dp_cfg.unicast_params.unicast_window_interval.async_rx_interval_ms);
                     set_device_profile(app_context, &set_dp_cfg);
                     break;
-            }
-#endif
-        }
-    }
+                    }
+                    #endif
+                }
+           }
     }
 
 error:
-    if (sid_handle != NULL) {
-        sid_stop(sid_handle, SID_LINK_TYPE_1);
-        sid_deinit(sid_handle);
+    if (app_context->sidewalk_handle  != NULL) {
+        sid_stop(app_context->sidewalk_handle , SID_LINK_TYPE_1);
+        sid_deinit(app_context->sidewalk_handle );
         app_context->sidewalk_handle = NULL;
     }
-
+    fflush(NULL);
+    sys_reboot();
     vTaskDelete(NULL);
 }
 
@@ -536,7 +540,7 @@ void Portble_btn_press(u8 key)
 {
     if(KEY1 == key)
     {
-        queue_event(g_event_queue, EVENT_TYPE_SEND_HELLO, true);
+        queue_event(g_event_queue, EVENT_TYPE_FSK_CSS_SWITCH, true);
     }
     else if(KEY2 == key)
     {
@@ -548,7 +552,7 @@ void Portble_btn_press(u8 key)
     }
     else
     {
-        queue_event(g_event_queue, EVENT_TYPE_FSK_CSS_SWITCH, true);
+        queue_event(g_event_queue,  EVENT_TYPE_SEND_HELLO, true);
     }
 }
 
@@ -560,15 +564,12 @@ void Portble_btn_d_press(u8 key)
 void Portble_btn_l_press(u8 key)
 {
     ARG_UNUSED(key);
-    queue_event(g_event_queue, EVENT_FACTORY_RESET, true);
+    queue_event(g_event_queue, EVENT_TYPE_SEND_HELLO, true);
 }
 
 
 int app_start(void)
 {
-    // init the buffer to malloc/free
-//    memset(portble_non_ret_buf, 0, PORTBLE_NON_RET_BUF_SIZE);
-//    app_initialNonRetentionBuffer(portble_non_ret_buf, PORTBLE_NON_RET_BUF_SIZE);
     #if BLE_APP_PM_ENABLE
     void app_sleep_config(void);
     app_sleep_config();
@@ -606,31 +607,45 @@ int app_start(void)
         TL_LOG_E("sidewalk xTaskCreate init  err");
          configASSERT(0);
     }
-
+    return 0;
 }
 
 #if BLE_APP_PM_ENABLE
-extern void app_sid_set_wakeup_pin(void);
-extern void app_set_kb_wakeup(u8 e, u8 *p, int n);
+extern void app_sid_subg_sleep_enter(u8 e, u8 *p, int n);
+extern void app_sid_subg_wakeup(u8 e, u8 *p, int n);
 extern void proc_keyboard(u8 e, u8 *p, int n);
 extern void proc_keyboardSupend (u8 e, u8 *p, int n);
-
+#if (UI_BUTTON_ENABLE )
+extern void app_set_button_wakeup(u8 e, u8 *p, int n);
+#endif
 
 _attribute_ram_code_ void app_sid_sleep_enter(u8 e, u8 *p, int n)
 {
     (void)e;
     (void)p;
     (void)n;
+    #if (UI_KEYBOARD_ENABLE )
     app_set_kb_wakeup(e,p,n);
-    app_sid_set_wakeup_pin();
+    #endif
+    #if (UI_BUTTON_ENABLE )
+    app_set_button_wakeup(e,p,n);
+    #endif
+    #ifdef CONFIG_SIDEWALK_SUBGHZ_SUPPORT
+    app_sid_subg_sleep_enter(e,p,n);
+    #endif
 }
 
 void app_sid_wakeup(u8 e, u8 *p, int n)
 {
+    #if (UI_KEYBOARD_ENABLE || UI_BUTTON_ENABLE)
     #if (FREERTOS_ENABLE)
     proc_keyboardSupend(e,p,n);
     #else
     proc_keyboard(e,p,n);
+    #endif
+    #endif
+    #ifdef CONFIG_SIDEWALK_SUBGHZ_SUPPORT
+    //app_sid_subg_wakeup(e,p,n);
     #endif
 }
 
@@ -638,6 +653,7 @@ void app_sleep_config(void)
 {
     blc_ll_registerTelinkControllerEventCallback(BLT_EV_FLAG_SLEEP_ENTER, &app_sid_sleep_enter);
     blc_ll_registerTelinkControllerEventCallback(BLT_EV_FLAG_GPIO_EARLY_WAKEUP, &app_sid_wakeup);
+    blc_ll_registerTelinkControllerEventCallback(BLT_EV_FLAG_SUSPEND_EXIT, &app_sid_subg_wakeup);
 }
 
 #endif

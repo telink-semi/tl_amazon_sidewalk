@@ -87,25 +87,14 @@ struct sid_pal_serial_bus_client dev = {
     .client_selector_context = NULL,
 };
 
-static uint8_t  s_spi_internal_buf[RADIO_SX1262_SPI_BUFFER_SIZE];
+static uint8_t   s_spi_internal_buf[RADIO_SX1262_SPI_BUFFER_SIZE];
 
 const struct sid_pal_serial_bus_factory telink_spi_bus_factory_for_dut = {
     .create = telink_factory_create,
     .config = &bus_cfg,
 };
 
-//// --- App callback ---
-//void app_radio_event_notify(sid_pal_radio_events_t evt)
-//{
-//
-//}
-//
-//// irq callback
-//void app_radio_dio_irq_handler(void)
-//{
-//    return;
-//    //(void)sid_pal_radio_irq_process();  // put it in mainloop
-//}
+
 
 // PA config callback
 int pa_cfg_callback(int8_t req_dbm, radio_sx126x_pa_cfg_t *out)
@@ -211,25 +200,19 @@ void sx126x_bringup(void)
 }
 
 
-void app_sid_set_wakeup_pin(void)
+_attribute_ram_code_ void app_sid_subg_sleep_enter(u8 e, u8 *p, int n)
 {
     gpio_set_up_down_res(RADIO_NSS,PM_PIN_PULLUP_10K);
     gpio_output_dis(RADIO_NSS);
 }
 
-
-void app_sid_irq_check(void)
+_attribute_ram_code_ void app_sid_subg_wakeup(u8 e, u8 *p, int n)
 {
-#if BLE_APP_PM_ENABLE
-    void gpio_irq1_handler(void);
-    uint8_t pinState;
-    if (sid_pal_gpio_read(RADIO_DIO_1, &pinState) == SID_ERROR_NONE) {
-        if (pinState) {
-            //HAOJIE_DBG_CHN0_HIGH;
-            gpio_irq1_handler();
-            //HAOJIE_DBG_CHN0_LOW;
-        }
-    }
-#endif
+    gpio_function_en(RADIO_NSS);
+    gpio_output_en(RADIO_NSS);
+    gpio_input_dis(RADIO_NSS);
+    gpio_set_high_level(RADIO_NSS);   // low level is valid
+    gpio_analog_resistance_init();
+
 }
 

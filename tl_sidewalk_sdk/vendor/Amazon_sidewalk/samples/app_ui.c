@@ -282,158 +282,264 @@ void keyboard_init(void)
 #elif (UI_BUTTON_ENABLE)
 
 
-
+#define GPIO_WAKEUP_KEYPROC_CNT 3
+_attribute_ble_data_retention_ static u32 keyScanTick            = 0;
+_attribute_ble_data_retention_ static int gpioWakeup_keyProc_cnt = 0;
 /////////////////////////////////////////////////////////////////////
-    #define MAX_BTN_SIZE            2
-    #define BTN_VALID_LEVEL            0
+#define MAX_BTN_SIZE               2
+#define BTN_VALID_LEVEL            0
 
-    #define USER_BTN_1                0x01
-    #define USER_BTN_2                0x02
-
-    _attribute_data_retention_    u32 ctrl_btn[] = {SW1_GPIO, SW2_GPIO};
-    _attribute_data_retention_    u8 btn_map[MAX_BTN_SIZE] = {USER_BTN_1, USER_BTN_2};
+#define USER_BTN_1                0x01
+#define USER_BTN_2                0x02
+#define USER_BTN_3                0x0f
 
 
+_attribute_data_retention_    u32 ctrl_btn[] = {SW1_GPIO, SW2_GPIO};
+_attribute_data_retention_    u8 btn_map[MAX_BTN_SIZE] = {USER_BTN_1, USER_BTN_2};
 
-    _attribute_data_retention_    int key_not_released = 0;
 
-    _attribute_data_retention_    static u8 button_press_flag = 0;
 
-    /**
-     * @brief     record the result of key detect
-     */
-    typedef    struct{
-        u8     cnt;                //count button num
-        u8     btn_press;
-        u8     keycode[MAX_BTN_SIZE];            //6 btn
-    }vc_data_t;
-    _attribute_data_retention_    vc_data_t vc_event;
+_attribute_data_retention_    int key_not_released = 0;
 
-    /**
-     * @brief     record the status of button process
-     */
-    typedef struct{
-        u8  btn_history[4];        //vc history btn save
-        u8  btn_filter_last;
-        u8    btn_not_release;
-        u8     btn_new;                    //new btn  flag
-    }btn_status_t;
-    _attribute_data_retention_    btn_status_t     btn_status;
+_attribute_data_retention_    static u8 button_press_flag = 0;
 
-    extern void app_button_proc(bool press);
+/**
+ * @brief     record the result of key detect
+ */
+typedef    struct{
+    u8     cnt;                //count button num
+    u8     btn_press;
+    u8     keycode[MAX_BTN_SIZE];            //6 btn
+}vc_data_t;
+_attribute_data_retention_    vc_data_t vc_event;
 
-    /**
-     * @brief      Debounce processing during button detection
-     * @param[in]  btn_v - vc_event.btn_press
-     * @return     1:Detect new button;0:Button isn't changed
-     */
-    u8 btn_debounce_filter(u8 *btn_v)
-    {
-        u8 change = 0;
+/**
+ * @brief     record the status of button process
+ */
+typedef struct{
+    u8  btn_history[4];        //vc history btn save
+    u8  btn_filter_last;
+    u8    btn_not_release;
+    u8     btn_new;                    //new btn  flag
+}btn_status_t;
+_attribute_data_retention_    btn_status_t     btn_status;
 
-        for(int i=3; i>0; i--){
-            btn_status.btn_history[i] = btn_status.btn_history[i-1];
-        }
-        btn_status.btn_history[0] = *btn_v;
+extern void app_button_proc(bool press);
 
-        if(  btn_status.btn_history[0] == btn_status.btn_history[1] && btn_status.btn_history[1] == btn_status.btn_history[2] && \
-            btn_status.btn_history[0] != btn_status.btn_filter_last ){
-            change = 1;
+/**
+ * @brief      Debounce processing during button detection
+ * @param[in]  btn_v - vc_event.btn_press
+ * @return     1:Detect new button;0:Button isn't changed
+ */
+u8 btn_debounce_filter(u8 *btn_v)
+{
+    u8 change = 0;
 
-            btn_status.btn_filter_last = btn_status.btn_history[0];
-        }
+    for(int i=3; i>0; i--){
+        btn_status.btn_history[i] = btn_status.btn_history[i-1];
+    }
+    btn_status.btn_history[0] = *btn_v;
 
-        return change;
+    if(  btn_status.btn_history[0] == btn_status.btn_history[1] && btn_status.btn_history[1] == btn_status.btn_history[2] && \
+        btn_status.btn_history[0] != btn_status.btn_filter_last ){
+        change = 1;
+
+        btn_status.btn_filter_last = btn_status.btn_history[0];
     }
 
-    /**
-     * @brief      This function is key detection processing
-     * @param[in]  read_key - Decide whether to return the key detection result
-     * @return     1:Detect new button;0:Button isn't changed
-     */
-    u8 vc_detect_button(int read_key)
-    {
-        u8 btn_changed, i;
-        memset(&vc_event,0,sizeof(vc_data_t));            //clear vc_event
-        //vc_event.btn_press = 0;
+    return change;
+}
 
+/**
+ * @brief      This function is key detection processing
+ * @param[in]  read_key - Decide whether to return the key detection result
+ * @return     1:Detect new button;0:Button isn't changed
+ */
+u8 vc_detect_button(int read_key)
+{
+    u8 btn_changed, i;
+    memset(&vc_event,0,sizeof(vc_data_t));            //clear vc_event
+    //vc_event.btn_press = 0;
+
+    for(i=0; i<MAX_BTN_SIZE; i++){
+        if(BTN_VALID_LEVEL != !gpio_read(ctrl_btn[i])){
+            vc_event.btn_press |= BIT(i);
+        }
+    }
+
+    btn_changed = btn_debounce_filter(&vc_event.btn_press);
+
+
+    if(btn_changed && read_key){
         for(i=0; i<MAX_BTN_SIZE; i++){
-            if(BTN_VALID_LEVEL != !gpio_read(ctrl_btn[i])){
-                vc_event.btn_press |= BIT(i);
+            if(vc_event.btn_press & BIT(i)){
+                vc_event.keycode[vc_event.cnt++] = btn_map[i];
             }
         }
 
-        btn_changed = btn_debounce_filter(&vc_event.btn_press);
-
-
-        if(btn_changed && read_key){
-            for(i=0; i<MAX_BTN_SIZE; i++){
-                if(vc_event.btn_press & BIT(i)){
-                    vc_event.keycode[vc_event.cnt++] = btn_map[i];
-                }
-            }
-
-            return 1;
-        }
-
-        return 0;
+        return 1;
     }
 
+    return 0;
+}
 
-    /**
-     * @brief        this function is used to detect if button pressed or released.
-     * @param[in]    e - event type when this function is triggered by LinkLayer event
-     * @param[in]    p - event callback data pointer for when this function is triggered by LinkLayer event
-     * @param[in]    n - event callback data length when this function is triggered by LinkLayer event
-     * @return      none
-     */
-    void proc_button(u8 e, u8 *p, int n)
+
+/**
+ * @brief        this function is used to detect if button pressed or released.
+ * @param[in]    e - event type when this function is triggered by LinkLayer event
+ * @param[in]    p - event callback data pointer for when this function is triggered by LinkLayer event
+ * @param[in]    n - event callback data length when this function is triggered by LinkLayer event
+ * @return      none
+ */
+void proc_button(u8 e, u8 *p, int n)
+{
+    if (e == BLT_EV_FLAG_GPIO_EARLY_WAKEUP) {
+        gpioWakeup_keyProc_cnt = GPIO_WAKEUP_KEYPROC_CNT;
+    } else if (gpioWakeup_keyProc_cnt) {
+        gpioWakeup_keyProc_cnt--;
+    }
+
+    if (gpioWakeup_keyProc_cnt || clock_time_exceed(keyScanTick, 10 * 1000)) { //keyScan interval: 10mS
+        keyScanTick = clock_time();
+    } else {
+        return;
+    }
+
+    int det_key = vc_detect_button(1);
+
+    if (det_key)  //key change: press or release
     {
 
-        int det_key = vc_detect_button(1);
+        u8 key0 = vc_event.keycode[0];
+        u8 key1 = vc_event.keycode[1];
 
-        if (det_key)  //key change: press or release
+        key_not_released = 1;
+
+        if(vc_event.cnt == 2)  //two key press
         {
-
-            u8 key0 = vc_event.keycode[0];
-            u8 key1 = vc_event.keycode[1];
-
-            key_not_released = 1;
-
-            if(vc_event.cnt == 2)  //two key press
-            {
-                printf("%s, %d: key0 %d, key1 %d press\r\n", __FUNCTION__, __LINE__, key0, key1);
-            }
-            else if(vc_event.cnt == 1) //one key press
-            {
-                printf("%s, %d: key0 %d, key1 %d press\r\n", __FUNCTION__, __LINE__, key0, key1);
-                if(key0 == USER_BTN_1)
-                {
-                    app_button_proc(true);
-                    button_press_flag = 1;
-                }
-                else if(key0 == USER_BTN_2)
-                {
-                    #if (UI_ACC_SIMU_ENABLE)
-                    extern void app_set_simulate_motion_detected_flag(void);
-                    app_set_simulate_motion_detected_flag();
-                    #endif
-                }
-            }
-            else{  //release
-                printf("%s, %d: key0 %d, key1 %d release\r\n", __FUNCTION__, __LINE__, key0, key1);
-                key_not_released = 0;
-
-                if(button_press_flag){
-                    button_press_flag = 0;
-                    app_button_proc(false);
-                }
-            }
+            tlkapi_printf(APP_BUTTON_LOG_EN,"2%s, %d: key0 %d, key1 %d   press\r\n", __FUNCTION__, __LINE__, key0, key1);
 
         }
+        else if(vc_event.cnt == 1) //one key press
+        {
+            btn_value = key0;
+            tlkapi_printf(APP_BUTTON_LOG_EN,"1%s, %d: key0 %d, key1 %d press\r\n", __FUNCTION__, __LINE__, key0, key1);
+            if(key0 == USER_BTN_1)
+            {
+                app_button_proc(true);
+                button_press_flag = 1;
+            }
+            else if(key0 == USER_BTN_2)
+            {
+                app_button_proc(true);
+                button_press_flag = 1;
+            }
+            else if(key0 == USER_BTN_3)
+            {
+                app_button_proc(true);
+                button_press_flag = 1;
+            }
+        }
+        else{  //release
+            tlkapi_printf(APP_BUTTON_LOG_EN,"%s, %d: key0 %d, key1 %d release\r\n", __FUNCTION__, __LINE__, key0, key1);
+            key_not_released = 0;
 
+            if(button_press_flag){
+                button_press_flag = 0;
+                app_button_proc(false);
+            }
+        }
 
     }
+
+
+}
+_attribute_ram_code_ void app_set_button_wakeup(u8 e, u8 *p, int n)
+{
+    (void)e;
+    (void)p;
+    (void)n;
+    #if (BLE_APP_PM_ENABLE)
+    /* suspend time > 50ms.add GPIO wake_up */
+    if (((u32)(blc_pm_getWakeupSystemTick() - clock_time())) > 100 * SYSTEM_TIMER_TICK_1MS) {
+        blc_pm_setWakeupSource(PM_WAKEUP_PAD); //GPIO PAD wake_up
+    }
+    #endif
+}
+
+void button_retention_init(void)
+{
+    gpio_function_en(SW1_GPIO);
+    gpio_output_dis(SW1_GPIO);
+    gpio_input_en(SW1_GPIO);
+
+    gpio_function_en(SW2_GPIO);
+    gpio_output_dis(SW2_GPIO);
+    gpio_input_en(SW2_GPIO);
+
+//    gpio_function_en(SW3_GPIO);
+//    gpio_output_dis(SW3_GPIO);
+//    gpio_input_en(SW3_GPIO);
+
+    gpio_set_up_down_res(SW1_GPIO, GPIO_PIN_PULLUP_10K);
+    gpio_set_irq(GPIO_IRQ1, SW1_GPIO, INTR_FALLING_EDGE);
+
+    gpio_set_up_down_res(SW2_GPIO, GPIO_PIN_PULLUP_10K);
+    gpio_set_irq(GPIO_IRQ1, SW2_GPIO, INTR_FALLING_EDGE);
+
+
+    gpio_set_irq_mask(GPIO_IRQ_IRQ1);
+    plic_interrupt_enable(IRQ_GPIO_IRQ1);
+
+    #if (BLE_APP_PM_ENABLE)
+    pm_set_gpio_wakeup(SW1_GPIO,WAKEUP_LEVEL_LOW, 1);
+    pm_set_gpio_wakeup(SW2_GPIO,WAKEUP_LEVEL_LOW, 1);
+//    blc_ll_registerTelinkControllerEventCallback(BLT_EV_FLAG_SLEEP_ENTER, &app_set_button_wakeup);
+    #endif
+}
+
+
+void button_init(void)
+{
+    gpio_function_en(SW1_GPIO);
+    gpio_output_dis(SW1_GPIO);
+    gpio_input_en(SW1_GPIO);
+
+    gpio_function_en(SW2_GPIO);
+    gpio_output_dis(SW2_GPIO);
+    gpio_input_en(SW2_GPIO);
+
+//    gpio_function_en(SW3_GPIO);
+//    gpio_output_dis(SW3_GPIO);
+//    gpio_input_en(SW3_GPIO);
+
+
+    gpio_set_up_down_res(SW1_GPIO, GPIO_PIN_PULLUP_10K);
+    gpio_set_irq(GPIO_IRQ1, SW1_GPIO, INTR_FALLING_EDGE);
+
+    gpio_set_up_down_res(SW2_GPIO, GPIO_PIN_PULLUP_10K);
+    gpio_set_irq(GPIO_IRQ1, SW2_GPIO, INTR_FALLING_EDGE);
+
+//    gpio_set_up_down_res(SW3_GPIO, GPIO_PIN_PULLUP_10K);
+//    gpio_set_irq(GPIO_IRQ1, SW3_GPIO, INTR_LOW_LEVEL);
+
+    gpio_set_irq_mask(GPIO_IRQ_IRQ1);
+    plic_interrupt_enable(IRQ_GPIO_IRQ1);
+
+    #if (BLE_APP_PM_ENABLE)
+    pm_set_gpio_wakeup(SW1_GPIO,WAKEUP_LEVEL_LOW, 1);
+    pm_set_gpio_wakeup(SW2_GPIO,WAKEUP_LEVEL_LOW, 1);
+//    pm_set_gpio_wakeup(SW3_GPIO,WAKEUP_LEVEL_LOW, 1);
+    //blc_ll_registerTelinkControllerEventCallback(BLT_EV_FLAG_SLEEP_ENTER, &app_set_button_wakeup);
+    #endif
+
+//    #if (FREERTOS_ENABLE &&  BLE_APP_PM_ENABLE)
+//    extern void proc_keyboardSupend (u8 e, u8 *p, int n);
+//    //blc_ll_registerTelinkControllerEventCallback (BLT_EV_FLAG_GPIO_EARLY_WAKEUP, &proc_keyboardSupend);
+//    #endif
+}
+
+
 #endif   //end of UI_BUTTON_ENABLE
 
 
@@ -447,8 +553,7 @@ _attribute_data_retention_ unsigned char app_button_hold_cnts;
 
 void app_button_short_press(void)
 {
-//    extern void fmna_sn_access_handler(void);
-//    app_sched_event_put(NULL,NULL,fmna_sn_access_handler);
+    tlkapi_printf(APP_BUTTON_LOG_EN,"app_button_short_press  %d \r\n",btn_value);
     Portble_btn_press(btn_value);
 }
 
@@ -465,8 +570,12 @@ bool app_button_press_state(void)
         }
 #elif (UI_BUTTON_ENABLE)
 
-    if(gpio_read(SW1_GPIO) == 0) press_state = true;
-
+    if(btn_value == USER_BTN_1)
+        if(gpio_read(SW1_GPIO) == 0) press_state = true;
+    if(btn_value == USER_BTN_2)
+        if(gpio_read(SW2_GPIO) == 0) press_state = true;
+//    if(btn_value == USER_BTN_3)
+//        if(gpio_read(SW3_GPIO) == 0) press_state = true;
 #endif
 
     return press_state;
@@ -504,7 +613,7 @@ int app_button_long_press(void)
            return BTN_PRESS_LONG_TIME_MS;
     }
 
-    tlk_printf("%s, %d: press_times = %d, release_times = %d, hold_cnts = %d\r\n", __FUNCTION__, __LINE__, app_button_press_times, app_button_release_times, app_button_hold_cnts);
+    tlkapi_printf(APP_BUTTON_LOG_EN,"%s, %d: press_times = %d, release_times = %d, hold_cnts = %d\r\n", __FUNCTION__, __LINE__, app_button_press_times, app_button_release_times, app_button_hold_cnts);
     return 0;
 }
 
@@ -540,7 +649,7 @@ int app_button_press_proc(void)
         app_button_hold_cnts = 0;
     }
 
-    tlk_printf("%s, %d: press_times = %d, release_times = %d, hold_cnts = %d\r\n", __FUNCTION__, __LINE__, app_button_press_times, app_button_release_times, app_button_hold_cnts);
+    tlkapi_printf(APP_BUTTON_LOG_EN,"%s, %d: press_times = %d, release_times = %d, hold_cnts = %d\r\n", __FUNCTION__, __LINE__, app_button_press_times, app_button_release_times, app_button_hold_cnts);
     return 0;
 }
 
@@ -570,7 +679,7 @@ void app_button_release_proc(void)
     {
         app_button_release_times = 0;
     }
-    tlk_printf("%s, %d: press_times = %d, release_times = %d, hold_cnts = %d\r\n", __FUNCTION__, __LINE__, app_button_press_times, app_button_release_times, app_button_hold_cnts);
+    tlkapi_printf(APP_BUTTON_LOG_EN,"%s, %d: press_times = %d, release_times = %d, hold_cnts = %d\r\n", __FUNCTION__, __LINE__, app_button_press_times, app_button_release_times, app_button_hold_cnts);
 }
 
 void app_button_proc(bool press)
@@ -601,14 +710,21 @@ void app_button_proc(bool press)
 
 bool app_ui_need_deal(void)
 {
+#if UI_KEYBOARD_ENABLE
     if( key_not_released || scan_pin_need)
         return true;
+#endif
+#if UI_BUTTON_ENABLE
+    if( key_not_released )
+        return true;
+#endif
     return false;
 }
 
 
 void app_ui_Entry_suspend(void)
 {
+    #if UI_KEYBOARD_ENABLE
     u32 pin[] = KB_DRIVE_PINS;
     for (unsigned int i=0; i<(sizeof (pin)/sizeof(*pin)); i++){
         gpio_set_irq(GPIO_IRQ1, pin[i], INTR_HIGH_LEVEL);
@@ -618,6 +734,18 @@ void app_ui_Entry_suspend(void)
     blc_ll_registerTelinkControllerEventCallback (BLT_EV_FLAG_GPIO_EARLY_WAKEUP, &proc_keyboardSupend);
     gpio_set_irq_mask(GPIO_IRQ_IRQ1);
     plic_interrupt_enable(IRQ_GPIO_IRQ1);
+    #endif
+
+
+    #if (UI_BUTTON_ENABLE)
+    gpio_set_irq(GPIO_IRQ1, SW1_GPIO, INTR_LOW_LEVEL);
+    gpio_set_irq(GPIO_IRQ1, SW2_GPIO, INTR_LOW_LEVEL);
+//    gpio_set_irq(GPIO_IRQ1, SW3_GPIO, INTR_LOW_LEVEL);
+    extern void proc_keyboardSupend (u8 e, u8 *p, int n);
+    //blc_ll_registerTelinkControllerEventCallback (BLT_EV_FLAG_GPIO_EARLY_WAKEUP, &proc_keyboardSupend);
+    gpio_set_irq_mask(GPIO_IRQ_IRQ1);
+    plic_interrupt_enable(IRQ_GPIO_IRQ1);
+    #endif
 }
 
 #endif

@@ -204,7 +204,7 @@ _attribute_ram_code_ int main(void)
         app_sidewalk_init();
 #endif
     }
-    #if (JTAG_DEBUG_ENABLE || TLKAPI_RTT_PRINT)
+    #if ((!JTAG_DEBUG_DISABLE) || TLKAPI_RTT_PRINT)
     jtag_set_pin_en();
     #endif
     #if TLKAPI_RTT_PRINT

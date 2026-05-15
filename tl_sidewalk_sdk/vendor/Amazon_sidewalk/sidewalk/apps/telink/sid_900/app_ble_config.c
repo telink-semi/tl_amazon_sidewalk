@@ -12,7 +12,10 @@
  * IMPLIED, OR STATUTORY, INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
  */
-
+#include "tl_common.h"
+#include "drivers.h"
+#include "stack/ble/ble.h"
+#include  "sid_ble_adapter.h"
 #include "app_ble_config.h"
 
 #define countof(array_) \
@@ -74,16 +77,16 @@ static const sid_ble_cfg_adv_param_t adv_param = {
     .type = AMA_SERVICE,
     .fast_enabled = true,
     .slow_enabled = true,
-    .fast_interval = 256,
-    .fast_timeout = 3000,
-    .slow_interval = 1600,
+    .fast_interval = SID_ADV_MS_TO_INTERVAL(CFG_SIDEWALK_BLE_ADV_INT_FAST),
+    .fast_timeout = CFG_SIDEWALK_BLE_ADV_INT_TRANSITION,
+    .slow_interval = SID_ADV_MS_TO_INTERVAL(CFG_SIDEWALK_BLE_ADV_INT_SLOW),
     .slow_timeout = 0,
 };
 static const sid_ble_cfg_conn_param_t conn_param = {
     .min_conn_interval = 16,
     .max_conn_interval = 60,
-    .slave_latency = 0,
-    .conn_sup_timeout = 400,
+    .slave_latency = CFG_BLE_PERIPHERAL_PREF_LATENCY,
+    .conn_sup_timeout = CFG_BLE_PERIPHERAL_PREF_TIMEOUT,
 };
 static const sid_ble_cfg_gatt_profile_t ble_profile[] = {
     {

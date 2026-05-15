@@ -1,3 +1,191 @@
+## V1.0.0.7(PR)
+
+### Version
+
+* SDK Version: tl_sidewalk_sdk V1.0.0.7
+* Chip Version: 
+    - TL323X:                  A0
+* Hardware EVK Version:
+    - TL323X:                  C1T388A20_V1.1
+* Platform Version: 
+    - TL323X:                  tl_platform_sdk V3.11.0
+* Ble SDK Version: 
+    - TL323X:                  tl_ble_sdk V4.0.4.7
+* Toolchain Version:
+    - TL323X:                  TL32 ELF MCULIB V5F GCC12.2  (IDE: [TelinkIoTStudio](https://www.telink-semi.com/development-tools))
+
+
+### BREAKING CHANGES
+
+   * N/A
+
+### Features
+
+    * Support sec boot via sbdt
+    * Support sid 900 demo for Sub-GHz (FSK/CSS),This feature supports CSS switching via button.
+
+### Bug Fixes
+    
+  * **Drivers**
+    * **rf**
+         * (TL323X)Fixed the issue of inconsistent Tx power caused by the call order between rf_rx_performance_mode and power-setting functions (e.g., rf_set_power_level).
+            * Detailed description:Two bits related to Tx power are written with fixed values in the rf_rx_performance_mode interface. Therefore, calling this function before or after power-setting functions (e.g., rf_set_power_level) will result in inconsistent Tx Power.
+            * After Fix: Tx Power is independent of the calling sequence of rf_rx_performance_mode and set power functions, and RX performance is not affected.
+            * Update Recommendation:Mandatory update.
+    * **sys**
+        * (TL323X) Fixed the issue where RF power-on operation caused system crash when the system was operating at high frequency.
+            * Detailed description: Before setting analog register 0x7d, if system clock is at high frequencies, the system may crash.
+            * After Fix: During the system init setting analog register 0x7d, at this moment, the system clock is 24M RC，the system runs normally, active current increases by about 110ua.
+            * Update Recommendation: Mandatory update.
+
+    * **adc**
+        * (TL323X)Fixed the issue where the ADC vbat mode failed to accurately sample low voltages at normal temperatures.
+            * Detailed description:The VBAT_MODE_BELOW_2V2_DETECT_EN configuration macro has been removed, and the internal implementation of sd_adc_calculate_voltage has been modified. The sd_adc_set_vbat_4p_calib_vref interface has been added to implement the 4-point calibration logic, which is compatible with the original 2-stage (curved and linear) calibration of A0. The lpc_vbat_vol_detect_deinit interface has also been added to disable the voltage detection function below 2.2V for VBAT.
+            * After Fix: When the VBAT is sampled at voltages below 2.3V at room temperature, the error has been reduced from the original 100mv to 20mv.
+            * Update Recommendation:It is recommended to update when using ADC.
+        * (TL323X)Optimized GPIO 1/4 voltage divider sampling accuracy for 0mV~30mV.
+            * Detailed description:Since GPIO performs with higher precision in 1/1 attenuation (no division) mode when capturing 0~30mV, the efuse_set_sd_adc_calib_value interface has been added to calibrate 1/1 mode sampling. Additionally, the sd_adc_div_switch_adjust_rescale interface was introduced to enable dynamic switching: the system now automatically switches to 1/1 mode for samples below 50mV to enhance accuracy, while forcing a switch back to 4/1 mode for samples exceeding 1000mV to ensure range coverage.
+            * After Fix: The measurement error for voltages below 30mV has been significantly reduced from 10mV to approximately 3mV.
+            * Update Recommendation:Recommended for applications requiring high-precision sampling in the 0~30mV range.
+    * **efuse**
+        * (TL323X)Fixed the risk of incorrect chip ID reading in the efuse_get_chip_id interface.
+            * Detailed description: The eFuse clock was not configured for the efuse_get_chip_id interface, which may result in incorrect chip ID reading when called under different clock conditions.
+            * After Fix: Calling this interface at any clock frequency carries no risk of a chip ID read error.
+            * Update Recommendation: When using the efuse_get_chip_id interface, the `/proj_lib/*.a` file of the corresponding chip must be updated.
+    * **gpio**
+        * (TL323X)Fixed the issue where the GPIO IRQ mask could not be turned off.
+            * Detailed description: After calling gpio_clr_irq_mask, the GPIO interrupt will continue to be triggered.
+            * After Fix: Call the function gpio_clr_irq_mask, and the GPIO interrupt will no longer be triggered.
+            * Update Recommendation:It is recommended to update when using GPIO IRQ.
+
+### Refactoring
+
+   * N/A
+
+### Performance Improvements
+
+   * N/A
+
+### Known issues
+
+* N/A
+
+### CodeSize
+
+* TL323X
+    - Compiling Amazon_sid_dut
+        - Flash bin size: 409.43 KB
+        - IRAM size: 110.26 KB
+        - DRAM size: 22.92 KB
+    - Compiling Amazon_sid_sbdt
+        - Flash bin size: 350.07 KB
+        - IRAM size: 108.71 KB
+        - DRAM size: 18.13 KB
+    - Compiling Amazon_diagnostics
+        - Flash bin size:  165.26 KB
+        - IRAM size: 74.78 KB
+        - DRAM size: 12.73 KB
+    - Compiling Amazon_sid_900
+        - Flash bin size:  337.18 KB
+        - IRAM size: 101.19 KB
+        - DRAM size: 17.73 KB
+
+**Note:** 
+  * Supports JTAG debugging, with PM function disabled by default.
+
+
+### 版本
+
+* SDK Version: tl_sidewalk_sdk V1.0.0.7
+* Chip Version: 
+    - TL323X:                  A0
+* Hardware EVK Version:
+    - TL323X:                  C1T388A20_V1.1
+* Platform Version: 
+    - TL323X:                  tl_platform_sdk V3.11.0
+* Ble SDK Version: 
+    - TL323X:                  tl_ble_sdk V4.0.4.7
+* Toolchain Version:
+    - TL323X:                  TL32 ELF MCULIB V5F GCC12.2  (IDE: [TelinkIoTStudio](https://www.telink-semi.com/development-tools))
+
+
+### BREAKING CHANGES
+
+ * N/A
+ 
+### Features
+
+    * 通过SBDT 升级的时候支持security boot 模式
+    * 支持sid_900 demo ,支持 CSS/FSK 功能,支持通过按键进行CSS 模式切换.
+
+### Bug Fixes
+    
+* **Drivers**
+    * **rf**
+        * (TL323X)修复了以解决rf_rx_performance_mode与set power函数调（如rf_set_power_level）用先后顺序引起的power不一致问题。
+            * 详细描述：与Tx power相关的2个bit在rf_rx_performance_mode接口中被写入固定值，因此在set power函数（如rf_set_power_level）前后调用该函数会导致Tx Power不一致。
+            * 修复效果：Tx Power与rf_rx_performance_mode/set power函数调用顺序无关，rx性能未受影响 。
+            * 更新建议：必须更新。
+    * **sys**
+        * (TL323X) 修复了在系统高频运行时，RF上电操作导致系统崩溃的问题。
+            * 详细描述：在设置模拟寄存器0x7d之前，如果系统时钟处于高频状态，系统可能会崩溃。
+            * 修复效果：在系统初始化过程中设置模拟寄存器0x7d，此时系统时钟为24M RC，系统正常运行, active电流增加110ua左右。
+            * 更新建议：必须更新。
+    * **adc**
+        * (TL323X)修复了ADC vbat模式常温下采样低电压不准的问题。
+            * 详细描述：移除了VBAT_MODE_BELOW_2V2_DETECT_EN配置宏，修改了sd_adc_calculate_voltage内部实现，增加了sd_adc_set_vbat_4p_calib_vref 接口用于4点校准逻辑，兼容A0原来2段式（曲线和直线）校准，增加lpc_vbat_vol_detect_deinit 接口用于关闭VBAT2.2V以下电压检测功能。
+            * 修复效果：常温下VBAT采样2.3V以下电压时，误差由原来100mv降低到20mv。
+            * 更新建议：使用adc时建议更新。
+        * (TL323X)优化 GPIO 4 分压采样 0mV~30mV 精度问题。
+            * 详细描述：鉴于 GPIO 在 1 分压模式下采集 0~30mV 电压具有更高的精度，本次更新新增了 efuse_set_sd_adc_calib_value 接口，专门用于校准 1 分压模式下的采样偏置。同时引入 sd_adc_div_switch_adjust_rescale 接口实现分压模式的动态切换：当采样电压低于 50mV 时，系统将自动切换至 1 分压模式以提升精度；当采样电压高于 1000mV 时，则强制切换回 4 分压模式以保证量程。
+            * 修复效果：30mV 以下极小电压的采集误差从原先的 10mV 显著降低至 3mV 左右
+            * 更新建议：若应用场景涉及 0~30mV 极低电压的精确采集，建议同步此更新。
+    * **efuse**
+        * (TL323X)修复efuse_get_chip_id接口获取chip id错误的风险。
+            * 详细描述：efuse_get_chip_id接口未配置efuse时钟，不同时钟下调用此接口会有获取chip id错误的风险。
+            * 修复效果：在任意时钟下调用此接口无读错chip id的风险。
+            * 更新建议：使用efuse_get_chip_id接口时必须更新对应芯片的`/proj_lib/*.a`。
+    * **gpio**
+        * (TL323X) 修复了gpio irq mask 无法关闭的问题。
+            * 详细描述：调用gpio_clr_irq_mask后，gpio中断会继续触发。
+            * 修复效果：调用函数gpio_clr_irq_mask，gpio中断不会继续触发。
+            * 更新建议：使用gpio irq时建议更新。
+
+### Refactoring
+
+* N/A
+
+### Performance Improvements
+
+* N/A
+
+### Known issues
+
+* N/A
+
+### CodeSize
+
+* TL323X
+    - Compiling Amazon_sid_dut
+        - Flash bin size: 409.43 KB
+        - IRAM size: 110.26 KB
+        - DRAM size: 22.92 KB
+    - Compiling Amazon_sid_sbdt
+        - Flash bin size: 350.07 KB
+        - IRAM size: 108.71 KB
+        - DRAM size: 18.13 KB
+    - Compiling Amazon_diagnostics
+        - Flash bin size:  165.26 KB
+        - IRAM size: 74.78 KB
+        - DRAM size: 12.73 KB
+    - Compiling Amazon_sid_900
+        - Flash bin size:  337.18 KB
+        - IRAM size: 101.19 KB
+        - DRAM size: 17.73 KB
+
+ **Note:** 
+ * 默认支持jtag 调试，关闭了PM功能.
+
 ## V1.0.0.6(PR)
 
 ### Version

@@ -32,17 +32,6 @@
 ///////////////////////// Feature Configuration////////////////////////////////////////////////
 #define ACL_PERIPHR_SMP_ENABLE        0 //1 for smp,  0 no security
 #define BLE_OTA_SERVER_ENABLE         1
-#if AMAZON_DIAG_DEMO
-#define BLE_APP_PM_ENABLE             0
-#else
-#define BLE_APP_PM_ENABLE             1
-#endif
-
-#if BLE_APP_PM_ENABLE
-#define PM_DEEPSLEEP_RETENTION_ENABLE 1
-#endif
-
-#define BATT_CHECK_ENABLE             0
 
 #ifndef AMAZON_DIAG_DEMO
     #define AMAZON_DIAG_DEMO 0
@@ -55,6 +44,20 @@
 #ifndef AMAZON_900_DEMO
     #define AMAZON_900_DEMO 0
 #endif
+
+#if AMAZON_DIAG_DEMO
+#define BLE_APP_PM_ENABLE             0
+#else
+#define BLE_APP_PM_ENABLE             0
+#endif
+
+#if BLE_APP_PM_ENABLE
+#define PM_DEEPSLEEP_RETENTION_ENABLE 1
+#endif
+
+#define BATT_CHECK_ENABLE             0
+
+
 /* Flash Protection:
  * 1. Flash protection is enabled by default in SDK. User must enable this function on their final mass production application.
  * 2. User should use "Unlock" command in Telink BDT tool for Flash access during development and debugging phase.
@@ -107,14 +110,15 @@
 #define UI_KEYBOARD_ENABLE 1
 #else
 #define UI_LED_ENABLE      0
-#define UI_KEYBOARD_ENABLE 1
+#define UI_KEYBOARD_ENABLE 0
+#define UI_BUTTON_ENABLE   1
 #endif
 #else
 #define UI_LED_ENABLE      0
 #define UI_KEYBOARD_ENABLE 0
 #define UI_BUTTON_ENABLE   0
 #endif
-
+#define  APP_HW_SECURE_BOOT_ENABLE 0
 ///////////////////////// DEBUG  Configuration ////////////////////////////////////////////////
 #define DEBUG_GPIO_ENABLE    0
 
@@ -138,7 +142,7 @@
 #define APP_KEY_LOG_EN       1
 #define APP_BUTTON_LOG_EN    1
 
-#define JTAG_DEBUG_ENABLE    0 //if use JTAG, change this
+#define JTAG_DEBUG_DISABLE   0 //if use JTAG, change this
 
 
 /////////////////// DEEP SAVE FLG //////////////////////////////////

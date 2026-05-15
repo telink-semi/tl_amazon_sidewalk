@@ -59,7 +59,7 @@ void keyboard_init(void);
  * @param[in]   none
  * @return      none
  */
-void proc_button(void);
+void proc_button(u8 e, u8 *p, int n);
 
 
 #endif /* APP_UI_H_ */

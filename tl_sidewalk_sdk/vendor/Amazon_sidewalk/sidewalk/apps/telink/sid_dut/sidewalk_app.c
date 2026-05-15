@@ -61,7 +61,7 @@
 #define KEY4  0xf0
 #define PARAM_UNUSED (0U)
 
-_attribute_ble_data_retention_ static uint32_t persistent_link_mask = SID_LINK_TYPE_1;  //ble
+//_attribute_ble_data_retention_ static uint32_t persistent_link_mask = SID_LINK_TYPE_1;  //ble
 _attribute_ble_data_retention_ static uint8_t  sid_app_sleep_flag  = 0;  //ble
 
 
@@ -300,7 +300,7 @@ int app_start(void)
         TL_LOG_E("sidewalk xTaskCreate init  err");
          configASSERT(0);
     }
-
+    return 0;
 }
 
 
@@ -349,7 +349,7 @@ int app_sidewalk_init(void)
     sid_qa_set_config(&config, &pwr_meas_if);
     TL_LOG_I("sid QA cli application started...");
 
-
+    return 0;
 }
 
 
