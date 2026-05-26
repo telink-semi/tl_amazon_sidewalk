@@ -1,6 +1,6 @@
 # Telink Sidewalk SDK
 
-Amazon Sidewalk SDK for the Telink TL323X SoC, targeting the AIOT-DK1 development kit with ML3238S module.
+Amazon Sidewalk SDK for the Telink TL3238E1 SoC, targeting the AIOT-DK1 development kit with ML3238S module.
 
 ## Supported Demos
 
@@ -13,7 +13,7 @@ Amazon Sidewalk SDK for the Telink TL323X SoC, targeting the AIOT-DK1 developmen
 
 ## Hardware Requirements
 
-- **AIOT-DK1 motherboard** with **ML3238S module** (TL323X A0 chip)
+- **AIOT-DK1 motherboard** with **ML3238S module** (TL3238E1 A0 chip)
 - **Amazon Echo 4** (or other [compatible Sidewalk gateway](https://docs.sidewalk.amazon/introduction/sidewalk-gateways.html))
 - UART-USB converter (optional, for debug logs)
 - Male-female Arduino jumper cables
@@ -77,7 +77,7 @@ tl_amazon_sidewalk/
 | Component | Version |
 |-----------|---------|
 | Sidewalk SDK | V1.0.0.7 (PR) |
-| Chip | TL323X A0 |
+| Chip | TL3238E1 A0 |
 | EVK | C1T388A20_V1.1 |
 | Platform SDK | V3.11.0 |
 | BLE SDK | V4.0.4.7 |
@@ -85,8 +85,9 @@ tl_amazon_sidewalk/
 
 ## Documentation
 
-- [handbook](doc/AN-22063000-E3_tl_ble_sdk Developer Handbook.pdf) — BLE stack userguilde
-- [Guide](doc/AN-26032600-E3_Amazon_Sidewalk_Development_Kit_Quick_Start_Guide.pdf) — Amazon sidewalk guide
+- [Handbook](doc/AN-22063000-E3_tl_ble_sdk Developer Handbook.pdf) — BLE stack user guide
+- [Quick Start](doc/AN-26032600-E_Amazon_Sidewalk_Quick_Start_Guide.pdf) — Amazon Quick start
+- [Guide](doc/AN-26051800-E_Amazon_Sidewalk_User_Manual.pdf) — Amazon sidewalk guide
 - [Release Notes](doc/tl_amazon_sidewalk_Release_Note.md) — Version history
 
 ## Important Notes

@@ -150,7 +150,8 @@ class SidSupportedPlatform(Enum):
     NORDIC = (0, "nordic")
     TI = (1, "ti")
     SILABS = (2, "silabs")
-    GENERIC = (3, "generic")
+    TELINK = (3, "telink")
+    GENERIC = (4, "generic")
 
     def __init__(self, value: int, str_name: str) -> None:
         # Overload the value so that the enum value corresponds to the
@@ -1468,6 +1469,18 @@ ARG_GROUPS = [
         output_args=[OUTPUT_BIN_ARG, OUTPUT_HEX_ARG],
         config_file=Path("config/nordic/nrf528xx_dk/config.yaml"),
         chips=[SidChipAddr(name="nrf52840", offset_addr=0xFD000, default=True)],
+    ),
+    SidPlatformArgs(
+        platform=SidSupportedPlatform.TELINK,
+        input_groups=[
+            ACS_INPUT_GROUP_FORMAT,
+            BB_INPUT_GROUP_FORMAT,
+            AWS_INPUT_GROUP_FORMAT,
+        ],
+        addtional_input_args=[CONFIG_FILE_ARG, PLATFORM_ADDRESS_ARG],
+        output_args=[OUTPUT_BIN_ARG, OUTPUT_HEX_ARG],
+        config_file=Path("config/telink/TL3238E1/config.yaml"),
+        chips=[SidChipAddr(name="TL3238E1", offset_addr=0xF5000, default=True)],
     ),
     SidPlatformArgs(
         platform=SidSupportedPlatform.TI,
