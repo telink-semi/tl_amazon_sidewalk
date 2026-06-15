@@ -1,3 +1,154 @@
+## V1.0.0.8(PR)
+
+### Version
+
+* SDK Version: tl_sidewalk_sdk V1.0.0.8
+* Chip Version: 
+    - TL3238E1:                  A0
+* Hardware EVK Version:
+    - TL3238E1:                  C1T388A20_V1.1
+* Platform Version: 
+    - TL3238E1:                  tl_platform_sdk V3.11.2
+* Ble SDK Version: 
+    - TL3238E1:                  tl_ble_sdk V4.0.4.7
+* Toolchain Version:
+    - TL3238E1:                  TL32 ELF MCULIB V5F GCC12.2  (IDE: [TelinkIoTStudio](https://www.telink-semi.com/development-tools))
+
+
+### BREAKING CHANGES
+
+   * N/A
+
+### Features
+
+    * Support anti-rollback efuse interface.
+    * Update sidewalk stack to version 1.19.5.53.
+    * Add the flash_erase_block_64k and flash_erase_block_32k interfaces.
+
+### Bug Fixes
+    
+  * **Drivers**
+      * **gpio**
+        * (TL3238E1):Fix the unexpected interrupt issue that occurred during the initialization configuration of the GPIO.
+          * Detailed description:When configured as rising-edge triggered, if the external GPIO input is at a high level, the gpio_set_irq initialization will result in an unexpected interrupt response.
+          * After Fix:After the fix, this issue is no longer present.
+          * Update recommendation: To use the GPIO edge-triggered interrupt function, the driver must be updated.
+      * **rf**	
+        * (TL3238E1) Fixed the problem that Δf2 index failed to meet spec requirements when testing TX FDEV performance of some chips.
+          * Detailed description: 99.9% of Δf2 values are below 185KHz in TX FDEV test of partial chips.
+          * After Fix: After repair, all TX performance indicators comply with specification requirements.
+          * Update recommendation: Mandatory update.
+
+### Refactoring
+
+   * Optimize RAM; reduce RAM consumption by 21KB for the 900 demo.
+
+### Performance Improvements
+
+   * N/A
+
+### Known issues
+
+* N/A
+
+### CodeSize
+
+* TL323X
+    - Compiling Amazon_sid_dut
+        - Flash bin size: 394.16 KB
+        - IRAM size: 93.79 KB
+        - DRAM size: 20.17 KB
+    - Compiling Amazon_sid_sbdt
+        - Flash bin size: 330.60 KB
+        - IRAM size: 88.97 KB
+        - DRAM size: 15.38 KB
+    - Compiling Amazon_diagnostics
+        - Flash bin size:  147.49 KB
+        - IRAM size: 56.27 KB
+        - DRAM size: 10.22 KB
+    - Compiling Amazon_sid_900
+        - Flash bin size:  317.88 KB
+        - IRAM size: 81.54 KB
+        - DRAM size: 14.98 KB
+
+**Note:** 
+  * N/A
+
+
+### 版本
+
+* SDK Version: tl_sidewalk_sdk V1.0.0.8
+* Chip Version: 
+    - TL3238E1:                  A0
+* Hardware EVK Version:
+    - TL3238E1:                  C1T388A20_V1.1
+* Platform Version: 
+    - TL3238E1:                  tl_platform_sdk V3.11.2
+* Ble SDK Version: 
+    - TL3238E1:                  tl_ble_sdk V4.0.4.7
+* Toolchain Version:
+    - TL3238E1:                  TL32 ELF MCULIB V5F GCC12.2  (IDE: [TelinkIoTStudio](https://www.telink-semi.com/development-tools))
+
+
+### BREAKING CHANGES
+
+ * N/A
+ 
+### Features
+
+    * 支持读写anti-rollback 的相关接口
+    * 升级sidewalk 协议栈到1.19.5.53 版本.
+    * 增加 flash_erase_block_64k 和 flash_erase_block_32k 接口
+
+### Bug Fixes
+    
+* **Drivers**
+    * **gpio**
+        * (TL323X):修复gpio在初始化配置过程中产生的一次非预期中断问题。(merge_requests/@2688)
+          * 详细描述：当配置为上升沿触发时，外部gpio输入高电平，gpio_set_irq初始化完将导致一次非预期的中断响应。
+          * 修复效果:修复后无该问题。
+          * 更新建议：使用 GPIO沿中断触发功能必须更新驱动。
+    * **rf**
+        * (TL323X): 修复部分芯片测试tx fdev性能时Δf2指标未能达到spec要求。(merge_requests/@2656)(merge_requests/@2690)
+        * 详细描述： 部分芯片tx fdev测试中Δf2 99.9%指标小于185KHz。
+        * 修复效果: 修复后tx所有性能指标均能够符合spec要求。
+        * 更新建议：必须更新。
+
+### Refactoring
+
+* 优化RAM，900 demo 减少使用RAM 21KB
+
+### Performance Improvements
+
+* N/A
+
+### Known issues
+
+* N/A
+
+### CodeSize
+
+* TL323X
+    - Compiling Amazon_sid_dut
+        - Flash bin size: 394.16 KB
+        - IRAM size: 93.79 KB
+        - DRAM size: 20.17 KB
+    - Compiling Amazon_sid_sbdt
+        - Flash bin size: 330.60 KB
+        - IRAM size: 88.97 KB
+        - DRAM size: 15.38 KB
+    - Compiling Amazon_diagnostics
+        - Flash bin size:  147.49 KB
+        - IRAM size: 56.27 KB
+        - DRAM size: 10.22 KB
+    - Compiling Amazon_sid_900
+        - Flash bin size:  317.88 KB
+        - IRAM size: 81.54 KB
+        - DRAM size: 14.98 KB
+
+ **Note:** 
+ .* N/A
+
 ## V1.0.0.7(PR)
 
 ### Version

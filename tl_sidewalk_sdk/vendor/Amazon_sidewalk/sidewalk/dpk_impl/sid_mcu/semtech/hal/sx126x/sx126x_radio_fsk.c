@@ -34,7 +34,8 @@
 #define SX126X_FSK_TX_PROCESS_DELAY_US 1000
 #define SX126X_FSK_RX_PROCESS_DELAY_US 1000
 
-_attribute_ram_code_ static void radio_mp_to_sx126x_mp(sx126x_mod_params_gfsk_t *fsk_mp, const sid_pal_radio_fsk_modulation_params_t *mod_params)
+//_attribute_ram_code_
+static void radio_mp_to_sx126x_mp(sx126x_mod_params_gfsk_t *fsk_mp, const sid_pal_radio_fsk_modulation_params_t *mod_params)
 {
     fsk_mp->br_in_bps    = mod_params->bit_rate;
     fsk_mp->fdev_in_hz   = mod_params->freq_dev;
@@ -42,7 +43,8 @@ _attribute_ram_code_ static void radio_mp_to_sx126x_mp(sx126x_mod_params_gfsk_t 
     fsk_mp->mod_shape    = (sx126x_gfsk_mod_shapes_t)mod_params->mod_shaping;
 }
 
-_attribute_ram_code_ static void radio_pp_to_sx126x_pp(sx126x_pkt_params_gfsk_t *fsk_pp, const sid_pal_radio_fsk_packet_params_t *packet_params)
+//_attribute_ram_code_
+static void radio_pp_to_sx126x_pp(sx126x_pkt_params_gfsk_t *fsk_pp, const sid_pal_radio_fsk_packet_params_t *packet_params)
 {
     if(packet_params->preamble_length > 1) {
         fsk_pp->pbl_len_in_bits       = (packet_params->preamble_length - 1) << 3;
@@ -58,7 +60,8 @@ _attribute_ram_code_ static void radio_pp_to_sx126x_pp(sx126x_pkt_params_gfsk_t 
     fsk_pp->dc_free               = (sx126x_gfsk_dc_free_t)packet_params->radio_whitening_mode;
 }
 
-_attribute_ram_code_ int32_t radio_fsk_process_sync_word_detected(halo_drv_semtech_ctx_t *drv_ctx)
+//_attribute_ram_code_
+int32_t radio_fsk_process_sync_word_detected(halo_drv_semtech_ctx_t *drv_ctx)
 {
     uint8_t tmp  = 0;
     int32_t err =  RADIO_ERROR_NONE;
@@ -101,7 +104,8 @@ _attribute_ram_code_ int32_t radio_fsk_process_sync_word_detected(halo_drv_semte
     return err;
 }
 
-_attribute_ram_code_ int32_t radio_fsk_process_rx_done(halo_drv_semtech_ctx_t *drv_ctx, radio_fsk_rx_done_status_t *rx_done_status)
+//_attribute_ram_code_
+int32_t radio_fsk_process_rx_done(halo_drv_semtech_ctx_t *drv_ctx, radio_fsk_rx_done_status_t *rx_done_status)
 {
     sid_pal_radio_rx_packet_t       *radio_rx_packet      = drv_ctx->radio_rx_packet;
     sid_pal_radio_fsk_rx_packet_status_t  *fsk_rx_packet_status = &radio_rx_packet->fsk_rx_packet_status;
@@ -196,7 +200,8 @@ _attribute_ram_code_ int32_t radio_fsk_process_rx_done(halo_drv_semtech_ctx_t *d
     return err;
 }
 
-_attribute_ram_code_ sid_pal_radio_data_rate_t sid_pal_radio_fsk_mod_params_to_data_rate(const sid_pal_radio_fsk_modulation_params_t *mp)
+//_attribute_ram_code_
+sid_pal_radio_data_rate_t sid_pal_radio_fsk_mod_params_to_data_rate(const sid_pal_radio_fsk_modulation_params_t *mp)
 {
     uint8_t data_rate = SID_PAL_RADIO_DATA_RATE_INVALID;
 
@@ -218,7 +223,8 @@ _attribute_ram_code_ sid_pal_radio_data_rate_t sid_pal_radio_fsk_mod_params_to_d
     return data_rate;
 }
 
-_attribute_ram_code_ int32_t sid_pal_radio_fsk_data_rate_to_mod_params(sid_pal_radio_fsk_modulation_params_t *mod_params,
+//_attribute_ram_code_
+ int32_t sid_pal_radio_fsk_data_rate_to_mod_params(sid_pal_radio_fsk_modulation_params_t *mod_params,
                                           sid_pal_radio_data_rate_t data_rate)
 {
     if (mod_params == NULL) {
@@ -252,7 +258,8 @@ _attribute_ram_code_ int32_t sid_pal_radio_fsk_data_rate_to_mod_params(sid_pal_r
     return RADIO_ERROR_NONE;
 }
 
-_attribute_ram_code_ int32_t sid_pal_radio_prepare_fsk_for_rx(sid_pal_radio_fsk_pkt_cfg_t *rx_pkt_cfg)
+ //_attribute_ram_code_
+int32_t sid_pal_radio_prepare_fsk_for_rx(sid_pal_radio_fsk_pkt_cfg_t *rx_pkt_cfg)
 {
     int32_t err = RADIO_ERROR_INVALID_PARAMS;
 
@@ -294,7 +301,8 @@ _attribute_ram_code_ int32_t sid_pal_radio_prepare_fsk_for_rx(sid_pal_radio_fsk_
     return err;
 }
 
-_attribute_ram_code_ int32_t sid_pal_radio_prepare_fsk_for_tx(sid_pal_radio_fsk_pkt_cfg_t *tx_pkt_cfg)
+//_attribute_ram_code_
+int32_t sid_pal_radio_prepare_fsk_for_tx(sid_pal_radio_fsk_pkt_cfg_t *tx_pkt_cfg)
 {
     int32_t err = RADIO_ERROR_INVALID_PARAMS;
 
@@ -375,7 +383,8 @@ _attribute_ram_code_ int32_t sid_pal_radio_prepare_fsk_for_tx(sid_pal_radio_fsk_
     return err;
 }
 
-_attribute_ram_code_ int32_t sid_pal_radio_set_fsk_sync_word(const uint8_t *sync_word, uint8_t sync_word_length)
+//_attribute_ram_code_
+ int32_t sid_pal_radio_set_fsk_sync_word(const uint8_t *sync_word, uint8_t sync_word_length)
 {
     if (sx126x_set_gfsk_sync_word(sx126x_get_drv_ctx(), sync_word, sync_word_length)
         != SX126X_STATUS_OK) {
@@ -385,12 +394,14 @@ _attribute_ram_code_ int32_t sid_pal_radio_set_fsk_sync_word(const uint8_t *sync
     return RADIO_ERROR_NONE;
 }
 
-_attribute_ram_code_ int32_t sid_pal_radio_set_fsk_whitening_seed(uint16_t seed)
+ //_attribute_ram_code_
+int32_t sid_pal_radio_set_fsk_whitening_seed(uint16_t seed)
 {
     return RADIO_ERROR_NONE;
 }
 
-_attribute_ram_code_ int32_t sid_pal_radio_set_fsk_modulation_params(const sid_pal_radio_fsk_modulation_params_t *mod_params)
+//_attribute_ram_code_
+int32_t sid_pal_radio_set_fsk_modulation_params(const sid_pal_radio_fsk_modulation_params_t *mod_params)
 {
     if (mod_params == NULL) {
         return RADIO_ERROR_INVALID_PARAMS;
@@ -405,7 +416,8 @@ _attribute_ram_code_ int32_t sid_pal_radio_set_fsk_modulation_params(const sid_p
     return RADIO_ERROR_NONE;
 }
 
-_attribute_ram_code_ int32_t sid_pal_radio_set_fsk_packet_params(const sid_pal_radio_fsk_packet_params_t *packet_params)
+//_attribute_ram_code_
+int32_t sid_pal_radio_set_fsk_packet_params(const sid_pal_radio_fsk_packet_params_t *packet_params)
 {
     if (packet_params == NULL) {
         return RADIO_ERROR_INVALID_PARAMS;
@@ -420,7 +432,8 @@ _attribute_ram_code_ int32_t sid_pal_radio_set_fsk_packet_params(const sid_pal_r
     return RADIO_ERROR_NONE;
 }
 
-_attribute_ram_code_ uint32_t sid_pal_radio_fsk_time_on_air(const sid_pal_radio_fsk_modulation_params_t *mod_params,
+//_attribute_ram_code_
+ uint32_t sid_pal_radio_fsk_time_on_air(const sid_pal_radio_fsk_modulation_params_t *mod_params,
                               const sid_pal_radio_fsk_packet_params_t *packet_params,
                               uint8_t packetLen)
 {
@@ -440,14 +453,16 @@ _attribute_ram_code_ uint32_t sid_pal_radio_fsk_time_on_air(const sid_pal_radio_
 }
 
 
-_attribute_ram_code_ uint32_t sid_pal_radio_fsk_get_fsk_number_of_symbols(const sid_pal_radio_fsk_modulation_params_t *mod_params,
+ //_attribute_ram_code_
+uint32_t sid_pal_radio_fsk_get_fsk_number_of_symbols(const sid_pal_radio_fsk_modulation_params_t *mod_params,
                                              uint32_t delay_micro_secs)
 {
     uint32_t num_symb = SX126X_US_TO_SYMBOLS(delay_micro_secs, mod_params->bit_rate);
     return num_symb;
 }
 
-_attribute_ram_code_ uint32_t sid_pal_radio_get_fsk_tx_process_delay(void)
+//_attribute_ram_code_
+ uint32_t sid_pal_radio_get_fsk_tx_process_delay(void)
 {
     const halo_drv_semtech_ctx_t *drv_ctx = sx126x_get_drv_ctx();
     return (drv_ctx->config->state_timings.tx_delay_us < SX126X_FSK_PROCESS_DELAY_US_MIN
@@ -456,7 +471,8 @@ _attribute_ram_code_ uint32_t sid_pal_radio_get_fsk_tx_process_delay(void)
                : drv_ctx->config->state_timings.tx_delay_us;
 }
 
-_attribute_ram_code_ uint32_t sid_pal_radio_get_fsk_rx_process_delay(void)
+ //_attribute_ram_code_
+ uint32_t sid_pal_radio_get_fsk_rx_process_delay(void)
 {
     const halo_drv_semtech_ctx_t *drv_ctx = sx126x_get_drv_ctx();
     return (drv_ctx->config->state_timings.rx_delay_us < SX126X_FSK_PROCESS_DELAY_US_MIN

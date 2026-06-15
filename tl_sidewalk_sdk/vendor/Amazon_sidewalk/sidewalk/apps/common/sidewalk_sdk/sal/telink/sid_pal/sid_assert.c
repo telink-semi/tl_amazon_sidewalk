@@ -39,6 +39,9 @@ void sid_pal_assert(void)
 void sid_pal_assert(int line, const char *file)
 {
      tlkapi_printf(APP_LOG_EN, "[ASSERT] %s:%d\n",file,line);
+     while(1) {
+         __asm__ volatile("nop");
+     }
 }
 
 #endif

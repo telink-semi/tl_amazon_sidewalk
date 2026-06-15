@@ -55,6 +55,6 @@ void sid_ble_conn_deinit(void);
  *
  * @return connection paramters as defined in @ref sid_ble_conn_params_t.
  */
-const sid_ble_conn_params_t *sid_ble_conn_params_get(void);
+sid_ble_conn_params_t *sid_ble_conn_params_get(void);
 
 #endif /* SID_BLE_CONNECTION_H */

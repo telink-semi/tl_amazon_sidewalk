@@ -453,7 +453,6 @@
 									<listOptionValue builtIn="false" value="../../.."/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/common}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/common}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Amazon_sizewalk/vendor/Amazon_sidewalk/samples}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/sid_qa/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/public/sid_pal_ifc/wifi}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/public/sid_pal_ifc/gnss}&quot;"/>
@@ -473,7 +472,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/ama/prebuilts/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/ama/prebuilts/include/nanopb}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/sid_900_network_impl/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/internal/sid_rng_ifc/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/sid_parsers/sid_parser_utils/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/internal/sid_list}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/public/sid_ifc/sid_error}&quot;"/>
@@ -482,7 +480,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/public/sid_ifc/sid_sdk_version}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/public/sid_ifc/sid_time_sync_config}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/public/sid_ifc/sid_setup_failure}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Amazon_sizewalk/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/public/sid_ifc/sid_time_types}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/public/sid_pal_ifc/assert}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/public/sid_pal_ifc/ble_adapter}&quot;"/>
@@ -518,45 +515,18 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/public/sid_pal_ifc/temperature}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/samples/FlashDB/port/fal/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/samples/FlashDB/inc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/hal/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/mbedtls/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Amazon_sizewalk/vendor/Amazon_sidewalk/sidewalk/util}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Amazon_sizewalk/vendor/Amazon_sidewalk/samples/FlashDB/port/fal}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Amazon_sizewalk/vendor/Amazon_sidewalk/samples/FlashDB/port/fal}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/sal/common/sid_ifc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/sal/common/sid_pal_types}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/sal/common/sid_pal_ifc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/sal/common/sid_time_ops}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/sal/sid_pal/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/sal/sid_pal/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/semtech/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/ace/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/util/sid_list/freebsd}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/util/sid_list/lk}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/util}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/ace/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/internal/sid_bitmask_ifc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/internal/sid_clock_ifc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/internal/sid_diag_log_ifc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/internal/sid_endian}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/internal/sid_ep_cap_cfg_ifc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/internal/sid_list/freebsd}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/internal/sid_list/lk}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/internal/sid_registration_ifc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/internal/sid_rng_ifc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/internal/sid_sbdt_ifc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/internal/sid_state_ifc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/internal/sid_utils/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/sid_api/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/public/sid_ifc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/sid_base64/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/sid_gcs/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/sid_network_address/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/sid_on_dev_cert_cli/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/sid_parsers/sid_parser_utils/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/sid_remote_logging/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/sid_sbdt/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/sid_state/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/common/sid_time_ops/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/telink/sid_pal/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/sal/telink/sid_pal/interfaces/platform_init_types}&quot;"/>
@@ -1151,7 +1121,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/dpk_impl/sid_mcu/semtech/hal/sx126x/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/dpk_impl/sid_mcu/semtech/hal/sx126x/include/semtech}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/samples}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/telink/sid_sbdt}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/telink/sid_900}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/ama/prebuilts/include/ace}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/ama/prebuilts/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/vendor/Amazon_sidewalk/sidewalk/apps/common/sidewalk_sdk/ama/prebuilts/include/nanopb}&quot;"/>

@@ -31,7 +31,7 @@
  *                                              local macro                                                        *
  *********************************************************************************************************************/
 #define GPIO_BIT_POSITION(byte) (byte ? __builtin_ctz(byte) : -1)
-
+#define JTAG_MODE 1
 /**********************************************************************************************************************
  *                                             local data type                                                     *
  *********************************************************************************************************************/
@@ -267,9 +267,13 @@ void gpio_shutdown(gpio_pin_e pin)
             //disable input
         reg_gpio_pa_ie = 0x80;  //except SWS
         reg_gpio_pb_ie &= 0xf0;
+#if JTAG_MODE && defined(MCU_CORE_TL323X)
+        reg_gpio_pd_ie = 0xf0;
+#else
+        reg_gpio_pd_ie = 0x00;
+#endif
         analog_write_reg8(areg_gpio_pb_ie, (analog_read_reg8(areg_gpio_pb_ie) & 0x0f));
         analog_write_reg8(areg_gpio_pc_ie, 0);
-        reg_gpio_pd_ie = 0x00;
         reg_gpio_pe_ie = 0x00;
 
 
@@ -277,14 +281,22 @@ void gpio_shutdown(gpio_pin_e pin)
         reg_gpio_pa_oen = 0xff;
         reg_gpio_pb_oen = 0xff;
         reg_gpio_pc_oen = 0xff;
+#if JTAG_MODE && defined(MCU_CORE_TL323X)
+        reg_gpio_pd_oen = 0x0f;
+#else
         reg_gpio_pd_oen = 0xff;
+#endif
         reg_gpio_pe_oen = 0xff;
 
         //as gpio
         reg_gpio_pa_gpio = 0x7f; //except SWS
         reg_gpio_pb_gpio = 0xff;
         reg_gpio_pc_gpio = 0xff;
+#if JTAG_MODE && defined(MCU_CORE_TL323X)
+        reg_gpio_pd_gpio = 0x0f;
+#else
         reg_gpio_pd_gpio = 0xff;
+#endif
         reg_gpio_pe_gpio = 0xff;
 
     }
@@ -305,11 +317,16 @@ void gpio_shutdown(gpio_pin_e pin)
 void gpio_set_irq(gpio_irq_num_e irq, gpio_pin_e pin, gpio_irq_trigger_type_e trigger_type)
 {
     /*
-        When selecting pull-up resistance and rising edge to trigger gpio interrupt, gpio_irq_en should be placed before setting gpio_set_irq,
-        otherwise an interrupt will be triggered by mistake.
+     * Incorrect sequence during GPIO interrupt configuration often leads to spurious interrupts. 
+     * The configuration must strictly follow the following sequence (jira DRIV-4162):
+     * Enable irq first (before setting Polarity)  
+     * Set irq config
+     * Finally, clear the interrupt status flag 
      */
     gpio_irq_en(pin, irq);
-    gpio_clr_irq_status((gpio_irq_e)BIT(irq)); //must clear cause to unexpected interrupt.
+    if (irq == GPIO_IRQ0) {
+        reg_gpio_irq_ctrl |= FLD_GPIO_CORE_INTERRUPT_EN; //Only GPIO_IRQ0 needs to enable FLD_GPIO_CORE_INTERRUPT_EN.
+    }
     switch (trigger_type) {
     case INTR_RISING_EDGE:
         BM_CLR(reg_gpio_pol(pin), pin & 0xff);
@@ -328,9 +345,7 @@ void gpio_set_irq(gpio_irq_num_e irq, gpio_pin_e pin, gpio_irq_trigger_type_e tr
         BM_SET(reg_gpio_irq_level, BIT(irq));
         break;
     }
-    if (irq == GPIO_IRQ0) {
-        reg_gpio_irq_ctrl |= FLD_GPIO_CORE_INTERRUPT_EN; //Only GPIO_IRQ0 needs to enable FLD_GPIO_CORE_INTERRUPT_EN.
-    }
+    gpio_clr_irq_status((gpio_irq_e)BIT(irq));
 }
 
 /**
@@ -397,35 +412,42 @@ _attribute_flash_code_sec_noinline_ void gpio_shutdown_flashcode_for_asm(void)
     //disable input
     reg_gpio_pa_ie = 0x80; //SWS
     reg_gpio_pb_ie &= 0xf0;
-
+#if JTAG_MODE && defined(MCU_CORE_TL323X)
+    reg_gpio_pd_ie = 0xf0;
+#else
     reg_gpio_pd_ie = 0x00;
-    reg_gpio_pe_ie = 0x00;
+#endif
 
+    reg_gpio_pe_ie = 0x00;
+#if JTAG_MODE
+    #if defined(MCU_CORE_TL323X)
     reg_rst1 |= FLD_RST1_ALGM;
     reg_clk_en1 |= FLD_CLK1_ALGM_EN;
 
     reg_ana_len     = 1;
-    reg_ana_addr    = 0xbd;
-    reg_ana_data(0) = 0x00;
+    reg_ana_addr    = 0x20;
+    reg_ana_data(0) = 0xf0;
     while (!(reg_ana_buf_cnt & FLD_ANA_TX_BUFCNT))
         ;
-    reg_ana_ctrl = (FLD_ANA_CYC | FLD_ANA_RW);
+    reg_ana_ctrl = (FLD_ANA_CYC | FLD_ANA_RW | ((0x120 & 0x00000300) >> 8));
     while (reg_ana_ctrl & FLD_ANA_BUSY)
         ;
     reg_ana_ctrl = 0x00;
 
     reg_ana_len     = 1;
-    reg_ana_addr    = 0xbf;
-    reg_ana_data(0) = 0x00;
+    reg_ana_addr    = 0x24;
+    reg_ana_data(0) = 0xff;
     while (!(reg_ana_buf_cnt & FLD_ANA_TX_BUFCNT))
         ;
-    reg_ana_ctrl = (FLD_ANA_CYC | FLD_ANA_RW);
+    reg_ana_ctrl = (FLD_ANA_CYC | FLD_ANA_RW | ((0x124 & 0x00000300) >> 8));
     while (reg_ana_ctrl & FLD_ANA_BUSY)
         ;
     reg_ana_ctrl = 0x00;
 
     reg_rst1 &= ~(FLD_RST1_ALGM);
     reg_clk_en1 &= ~(FLD_CLK1_ALGM_EN);
+    #endif
+#endif
 }
 /**
  * @brief      This function servers to shut down all the GPIO when wakeup from deep retention sleep.
@@ -438,35 +460,42 @@ _attribute_ram_code_sec_optimize_o2_ void gpio_shutdown_ramcode_for_asm(void)
     //disable input
     reg_gpio_pa_ie = 0x80; //SWS
     reg_gpio_pb_ie &= 0xf0;
-
+#if JTAG_MODE && defined(MCU_CORE_TL323X)
+    reg_gpio_pd_ie = 0xf0;
+#else
     reg_gpio_pd_ie = 0x00;
+#endif
     reg_gpio_pe_ie = 0x00;
 
+#if JTAG_MODE
+    #if defined(MCU_CORE_TL323X)
     reg_rst1 |= FLD_RST1_ALGM;
     reg_clk_en1 |= FLD_CLK1_ALGM_EN;
 
     reg_ana_len     = 1;
-    reg_ana_addr    = 0xbd;
-    reg_ana_data(0) = 0x00;
+    reg_ana_addr    = 0x20;
+    reg_ana_data(0) = 0xf0;
     while (!(reg_ana_buf_cnt & FLD_ANA_TX_BUFCNT))
         ;
-    reg_ana_ctrl = (FLD_ANA_CYC | FLD_ANA_RW);
+    reg_ana_ctrl = (FLD_ANA_CYC | FLD_ANA_RW | ((0x120 & 0x00000300) >> 8));
     while (reg_ana_ctrl & FLD_ANA_BUSY)
         ;
     reg_ana_ctrl = 0x00;
 
     reg_ana_len     = 1;
-    reg_ana_addr    = 0xbf;
-    reg_ana_data(0) = 0x00;
+    reg_ana_addr    = 0x24;
+    reg_ana_data(0) = 0xff;
     while (!(reg_ana_buf_cnt & FLD_ANA_TX_BUFCNT))
         ;
-    reg_ana_ctrl = (FLD_ANA_CYC | FLD_ANA_RW);
+    reg_ana_ctrl = (FLD_ANA_CYC | FLD_ANA_RW | ((0x124 & 0x00000300) >> 8));
     while (reg_ana_ctrl & FLD_ANA_BUSY)
         ;
     reg_ana_ctrl = 0x00;
 
     reg_rst1 &= ~(FLD_RST1_ALGM);
     reg_clk_en1 &= ~(FLD_CLK1_ALGM_EN);
+    #endif
+#endif
 }
 
 /**

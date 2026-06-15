@@ -31,7 +31,7 @@
 
 /*
  * addr - only 0x00012 ~ 0x00021 can be used !!! */
-#define write_log32(err_code)           write_sram32(0x00014, err_code)
+//#define write_log32(err_code)           write_sram32(0x00014+0x68000, err_code)
 
 /******************************* pke_start ******************************************************************/
 #define ismemzero4(a, len)              uint32_BigNum_Check_Zero(a, len)    //For compatible with B91
@@ -63,6 +63,7 @@
 
 
 /******************************* mac start ************************************************************/
+extern drv_api_status_e efuse_get_ieee_addr(unsigned char *buf);
 static inline bool get_device_mac_address(u8* mac_read, int length)
  {
     unsigned char mac[8];
@@ -263,6 +264,28 @@ enum{//todo: SunWei &YeYang
     FLD_IRQ_ZB_RT_EN = 15,
 };
 /******************************* plic_end ********************************************************************/
+
+
+/**
+ * @brief      This function serves to read data from EFUSE
+ * @param[out] buf  - Pointer to buffer to store the read data.
+ * @param[in]  len  - Length of data to read, must be 4.
+ * @return     DRV_API_SUCCESS: operation successful.
+ *             DRV_API_TIMEOUT: operation timeout.
+ *             DRV_API_FAILURE: len is not 4.
+ */
+drv_api_status_e efuse_read_anti_rollback(unsigned char *buf, unsigned short len);
+
+/**
+ * @brief      This function serves to write data to EFUSE
+ *             EFUSE each bit can only be  written once.
+ * @param[in]  buf  - Pointer to buffer containing the data to write.
+ * @param[in]  len  - Length of data to write, must be 4.
+ * @return     DRV_API_SUCCESS: write successful.
+ *             DRV_API_TIMEOUT: operation timeout.
+ *             DRV_API_FAILURE: len is not 4
+ */
+drv_api_status_e efuse_write_anti_rollback(unsigned char *buf, unsigned short len);
 
 
 #endif /* DRIVERS_TL323X_EXT_MISC_H_ */

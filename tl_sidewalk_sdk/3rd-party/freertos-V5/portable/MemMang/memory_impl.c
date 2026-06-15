@@ -33,19 +33,21 @@ void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer,
 function then they must be declared static - otherwise they will be allocated on
 the stack and so not exists after this function exits. */
 PRIVILEGED_DATA static StaticTask_t xIdleTaskTCB;
-PRIVILEGED_DATA static StackType_t uxIdleTaskStack[ configMINIMAL_STACK_SIZE * 2];
+//PRIVILEGED_DATA static StackType_t uxIdleTaskStack[ configMINIMAL_STACK_SIZE * 2];  // used main stack to save ram
+
 
     /* Pass out a pointer to the StaticTask_t structure in which the Idle task's
     state will be stored. */
     *ppxIdleTaskTCBBuffer = &xIdleTaskTCB;
 
     /* Pass out the array that will be used as the Idle task's stack. */
-    *ppxIdleTaskStackBuffer = uxIdleTaskStack;
-
+    //*ppxIdleTaskStackBuffer = uxIdleTaskStack;
+    extern uint32_t _STACK_TOP;
+    *ppxIdleTaskStackBuffer = (StackType_t *)(&_STACK_TOP )- configMINIMAL_STACK_SIZE * 2 - 0x80; //512 byte for main stack
     /* Pass out the size of the array pointed to by *ppxIdleTaskStackBuffer.
     Note that, as the array is necessarily of type StackType_t,
     configMINIMAL_STACK_SIZE is specified in words, not bytes. */
-    *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE  * 2;
+    *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE  * 2 ;
 }
 /*-----------------------------------------------------------*/
 

@@ -46,7 +46,7 @@ typedef struct {
 
     // CS selection strategy
     bool      use_hw_csn;        // pinmap.spi_csn_pin != GPIO_NONE_PIN
-    gpio_pin_e gpio_cs;          // This GPIO is available when there is no hardware CSN and no CS control callback.
+    gpio_func_pin_e gpio_cs;          // This GPIO is available when there is no hardware CSN and no CS control callback.
 } telink_spi_bus_t;
 
 sid_error_t telink_factory_create(const struct sid_pal_serial_bus_iface **iface,

@@ -59,9 +59,7 @@
  * @brief   L2CAP TX Data buffer for ACL Peripheral
  *          GATT server on ACL Peripheral use this buffer.
  */
- u8 app_per_l2cap_tx_buf[ACL_PERIPHR_MAX_NUM * PERIPHR_L2CAP_BUFF_SIZE];
+ _attribute_ble_data_retention_ u8 app_per_l2cap_tx_buf[ACL_PERIPHR_MAX_NUM * PERIPHR_L2CAP_BUFF_SIZE];
 
 /***************** ACL connection L2CAP RX & TX data Buffer allocation, End ****************************************/
 
-
-//u8 portble_non_ret_buf[PORTBLE_NON_RET_BUF_SIZE];

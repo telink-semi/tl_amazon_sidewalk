@@ -42,7 +42,7 @@ static unsigned char g_lpd_vbat_efuse_code = 0; /*LPD TRIM CODE is used to deter
  * | 7          | 8                    | 1.672            | 1.734           |
  * | 6          | 0                    | 1.645            | 1.710           |
  */
-_attribute_ble_data_retention_ static unsigned char lpd_vbat_1p7_trim_tab[] = {1, 9, 2, 10, 3, 11, 0, 8};
+static unsigned char lpd_vbat_1p7_trim_tab[] = {1, 9, 2, 10, 3, 11, 0, 8};
 
 /**
  * @brief       This function serves to protect the flash during the chip power-down process.

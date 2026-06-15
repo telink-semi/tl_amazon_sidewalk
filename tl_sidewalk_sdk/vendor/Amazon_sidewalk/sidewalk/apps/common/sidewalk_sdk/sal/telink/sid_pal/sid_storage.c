@@ -32,7 +32,7 @@
 #include <sid_pal_storage_kv_ifc.h>
 #include <stdint.h>
 #include <stdio.h>
-
+#include "app_nv.h"
 #define STORAGE_SERIAL_SIZE (32)
 #define COMB_GROUP_KEY(group,key) (((uint32_t)(key<<16)) | group)
 
@@ -93,7 +93,7 @@ sid_error_t sid_pal_storage_kv_record_set(uint16_t group, uint16_t key, void con
         return SID_ERROR_INVALID_ARGS;
     }
 
-    int rc  = app_tag_stroage_set_data(COMB_GROUP_KEY(group,key),p_data,len,0);
+    int rc  = app_tag_stroage_set_data(COMB_GROUP_KEY(group,key),(u8*)p_data,len,0);
     if (rc != 0) {
         TL_LOG_E("Failed to save record . Returned errno %d 0x%x %d", rc,group,key);
         return SID_ERROR_STORAGE_WRITE_FAIL;

@@ -112,7 +112,7 @@ int tlv_fetch(const tlv_db_t *db, tlv_tag_t tag, uint8_t *buf, uint16_t want)
 }
 
 
-int tlv_store(tlv_db_t *db, tlv_tag_t tag, const uint8_t *data, uint16_t sz)
+int tlv_store(tlv_db_t *db, tlv_tag_t tag, uint8_t *data, uint16_t sz)
 {
     if (!db || !db->io.read || !db->io.write)
         return -EINVAL;
@@ -153,7 +153,7 @@ int tlv_read_marker(const tlv_db_t *db, uint8_t *buf, uint8_t sz)
     return db->io.read(db->io.ctx, db->start, buf, sz);
 }
 
-int tlv_write_marker(tlv_db_t *db, const uint8_t *buf, uint8_t sz)
+int tlv_write_marker(tlv_db_t *db,  uint8_t *buf, uint8_t sz)
 {
     if (!db || !db->io.write)
         return -EINVAL;

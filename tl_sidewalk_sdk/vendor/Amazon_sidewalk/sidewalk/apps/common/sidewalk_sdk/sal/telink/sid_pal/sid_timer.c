@@ -271,14 +271,14 @@ PLIC_ISR_REGISTER_OS(pm_irq_handler, IRQ_PM_IRQ)
 PLIC_ISR_REGISTER(pm_irq_handler, IRQ_PM_IRQ)
 #endif
 #endif
-
+#if SID_TIMER_MODE
 static void ext_32k_timer_start(uint32_t time_tick)
 {
     clock_set_32k_tick(time_tick); //1s
     pm_clr_irq_status(FLD_WAKEUP_STATUS_ALL); //todo
     plic_interrupt_enable(IRQ_PM_IRQ);
 }
-
+#endif
 
 uint32_t roll_ns = 0;
 

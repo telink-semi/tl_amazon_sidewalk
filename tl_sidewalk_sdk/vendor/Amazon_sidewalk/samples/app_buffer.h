@@ -117,10 +117,4 @@ extern u8 app_per_l2cap_rx_buf[]; //ACL Peripheral L2cap RX data buffer
 extern u8 app_per_l2cap_tx_buf[]; //ACL Peripheral L2cap TX data buffer
 /***************** ACL connection L2CAP RX & TX data Buffer allocation, End ****************************************/
 
-#if AMAZON_DIAG_DEMO || AMAZON_DUT_DEMO
-#define PORTBLE_NON_RET_BUF_SIZE 1024 * 8 //8192
-#else
-#define PORTBLE_NON_RET_BUF_SIZE 1024 * 4 //4096
-#endif
-extern u8 portble_non_ret_buf[];
 #endif /* APP_BUFFER_H_ */

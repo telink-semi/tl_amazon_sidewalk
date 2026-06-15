@@ -29,6 +29,9 @@
 #include <sid_ble_uuid.h>
 #include "sid_ble_adapter.h"
 
+extern int blc_bt_enable(void);
+extern int blc_bt_disable(void);
+
 _attribute_ble_data_retention_ static uint32_t bt_enable_count = 0;
 
 int sid_ble_bt_enable(void)

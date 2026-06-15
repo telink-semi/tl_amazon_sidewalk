@@ -23,4 +23,5 @@
 const radio_sx126x_device_config_t* get_radio_cfg(void);
 const sid_pal_mfg_store_region_t* get_mfg_cfg(void);
 const struct sid_sub_ghz_links_config* app_get_sub_ghz_config(void);
+void app_sleep_config(void);
 #endif

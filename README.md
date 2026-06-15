@@ -59,7 +59,7 @@ tl_amazon_sidewalk/
 │   ├── vendor/
 │   │   ├── Amazon_sidewalk/          # Sidewalk integration
 │   │   │   ├── samples/              # Demo application code
-│   │   │   ├── sidewalk/             # Sidewalk protocol stack (apps + DPK impl)
+│   │   │   ├── sidewalk/             # Sidewalk protocol stack (apps(PALs) + DPK impl)
 │   │   │   ├── lib/                  # Pre-built libraries (v5/v5f, debug/release)
 │   │   │   └── mbedtls/              # Crypto library
 │   │   └── common/                   # Shared vendor code
@@ -79,15 +79,15 @@ tl_amazon_sidewalk/
 | Sidewalk SDK | V1.0.0.7 (PR) |
 | Chip | TL3238E1 A0 |
 | EVK | C1T388A20_V1.1 |
-| Platform SDK | V3.11.0 |
+| Platform SDK | V3.11.2 |
 | BLE SDK | V4.0.4.7 |
 | Toolchain | TL32 ELF MCULIB V5F GCC12.2 |
 
 ## Documentation
 
-- [Handbook](doc/AN-22063000-E3_tl_ble_sdk Developer Handbook.pdf) — BLE stack user guide
-- [Quick Start](doc/AN-26032600-E_Amazon_Sidewalk_Quick_Start_Guide.pdf) — Amazon Quick start
-- [Guide](doc/AN-26051800-E_Amazon_Sidewalk_User_Manual.pdf) — Amazon sidewalk guide
+- [Handbook](https://doc.telink-semi.cn/doc/en/software/res/sdk/ble/tl_ble_sdk_multi_connection_en/tl_ble_sdk_multi_connection_en/) — BLE stack user guide
+- [Quick Start](https://doc.telink-semi.cn/doc/application_note/sidewalk/userguide/AN-26032600-E_Amazon_Sidewalk_Quick_Start_Guide.pdf) — Amazon Quick start
+- [Guide](https://doc.telink-semi.cn/doc/application_note/sidewalk/userguide/AN-26051800-E_Amazon_Sidewalk_User_Manual.pdf) — Amazon sidewalk guide
 - [Release Notes](doc/tl_amazon_sidewalk_Release_Note.md) — Version history
 
 ## Important Notes

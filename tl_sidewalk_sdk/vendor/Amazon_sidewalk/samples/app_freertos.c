@@ -246,7 +246,7 @@ void app_BleTaskCreate(void)
 
     configASSERT(xBleSendDataMutex);
 
-    ret = xTaskCreate(ble_task, "tble", 4096, (void *)0, (tskIDLE_PRIORITY + configMAX_PRIORITIES-2), &hBleTask);
+    ret = xTaskCreate(ble_task, "tble", 2048, (void *)0, (tskIDLE_PRIORITY + configMAX_PRIORITIES-2), &hBleTask);
 
     configASSERT(ret == pdPASS);
 }
@@ -255,9 +255,10 @@ void app_BleTaskCreate(void)
     #if ((configUSE_TRACE_FACILITY == 1) && (configUSE_STATS_FORMATTING_FUNCTIONS > 0) && (configSUPPORT_DYNAMIC_ALLOCATION == 1))
 _attribute_ble_data_retention_ static TaskHandle_t hCpuTask = NULL;
 
+char pWriteBuffer[512];
 void task_help(void)
 {
-    char pWriteBuffer[512];
+
     vTaskList((char *)&pWriteBuffer);
     printf("task_name   task_state priority stack tasK_num\n");
     printf("%s", pWriteBuffer);
@@ -269,7 +270,7 @@ void task_help(void)
  */
 static void cpu_task(void *pvParameters)
 {
-    char pWriteBuffer[512];
+//    char pWriteBuffer[512];
     for (;;) {
         vTaskDelay(pdMS_TO_TICKS(10000));
         vTaskList((char *)&pWriteBuffer);
@@ -335,7 +336,7 @@ void app_TaskCreate(void)
     os_give_sem(); /* !!! important */
 
     #if ((configUSE_TRACE_FACILITY == 1) && (configUSE_STATS_FORMATTING_FUNCTIONS > 0) && (configSUPPORT_DYNAMIC_ALLOCATION == 1))
-    xTaskCreate(cpu_task, "cpu_task", configMINIMAL_STACK_SIZE * 4, (void *)0, (tskIDLE_PRIORITY), &hCpuTask);
+    xTaskCreate(cpu_task, "cpu_task", configMINIMAL_STACK_SIZE * 1, (void *)0, (tskIDLE_PRIORITY)+1, &hCpuTask);
     #endif //#if ( ( configUSE_TRACE_FACILITY == 1 ) && ( configUSE_STATS_FORMATTING_FUNCTIONS > 0 ) && ( configSUPPORT_DYNAMIC_ALLOCATION == 1 ) )
 
     tlkapi_printf(1,"app Task Create complete\r\n");
@@ -391,9 +392,9 @@ static void keyboard_task( void *pvParameters )
 void app_buttonTaskCreate(void)
 {
     BaseType_t ret;
-    ret = xTaskCreate(keyboard_task, "tBtn", 1024, (void *)0, (tskIDLE_PRIORITY + 2), &hButtonTask);
+    ret = xTaskCreate(keyboard_task, "tBtn", 512, (void *)0, (tskIDLE_PRIORITY + 2), &hButtonTask);
     configASSERT(ret == pdPASS);
-    tlkapi_printf(1,"app_buttonTaskCreate\r\n");
+    tlkapi_printf(APP_BUTTON_LOG_EN,"app_buttonTaskCreate\r\n");
 }
 #endif
 #endif //#if(FREERTOS_ENABLE)

@@ -70,6 +70,7 @@
 #define APP_FLASH_PROTECTION_ENABLE 1
 
 #define AMAZON_SIDEWALK_OPTIMIZE_EN 0
+#define AMAZON_SIDEWALK_OPTIMIZE_ISR_STACK 1
 
 #define  FLASH_4LINE_MODE_ENABLE 1
 ///////////////////////// OS settings /////////////////////////////////////////////////////////
@@ -80,14 +81,17 @@
 #define configTOTAL_HEAP_SIZE     ( 25 * 1024)
 #else
 #if AMAZON_DIAG_DEMO || AMAZON_DUT_DEMO
-#define configTOTAL_HEAP_SIZE     ( 38 * 1024)
+#define configTOTAL_HEAP_SIZE     ( 23 * 1024)
 #else
-#define configTOTAL_HEAP_SIZE     ( 36 * 1024)
+#define configTOTAL_HEAP_SIZE     ( 18 * 1024)
 #endif
 #endif
-#define configISR_PLIC_STACK_SIZE 640
-#define configTIMER_TASK_STACK_DEPTH 512
-#define config_HW_SELECT 0
+#define configISR_PLIC_STACK_SIZE 1024
+#define configTIMER_TASK_STACK_DEPTH 768
+#define HW_BOARD_1_X 0
+#define HW_BOARD_2_2 1
+
+#define config_HW_SELECT HW_BOARD_1_X
 
 /////////////////////// Board Select Configuration ///////////////////////////////
 #if (MCU_CORE_TYPE == MCU_CORE_B91)
@@ -105,9 +109,9 @@
 ///////////////////////// UI Configuration ////////////////////////////////////////////////////
 #if AMAZON_900_DEMO
 
-#if config_HW_SELECT
+#if (config_HW_SELECT == HW_BOARD_2_2)
 #define UI_LED_ENABLE      1
-#define UI_KEYBOARD_ENABLE 1
+#define UI_BUTTON_ENABLE   1
 #else
 #define UI_LED_ENABLE      0
 #define UI_KEYBOARD_ENABLE 0
@@ -140,7 +144,7 @@
 #define APP_CONTR_EVT_LOG_EN 0 //controller event
 #define APP_HOST_EVT_LOG_EN  1
 #define APP_KEY_LOG_EN       1
-#define APP_BUTTON_LOG_EN    1
+#define APP_BUTTON_LOG_EN    0
 
 #define JTAG_DEBUG_DISABLE   0 //if use JTAG, change this
 
@@ -153,9 +157,6 @@
 
 #if FREERTOS_ENABLE
 /////////////////////////////////////// PRINT DEBUG INFO ///////////////////////////////////////
-//    #undef UI_KEYBOARD_ENABLE
-//    #define UI_KEYBOARD_ENABLE           1
-
 
     #define traceAPP_LED_Task_Toggle()   //gpio_toggle(GPIO_CH01);
     #define traceAPP_BLE_Task_BEGIN()    //gpio_write(GPIO_CH02,1);
@@ -180,7 +181,7 @@
 #define TIMER_SOURCE_OS  2
 #define CONFIG_DIO3_FOR_ANT_SW 1
 #define CONFIG_TIMER_SOURCE  TIMER_SOURCE_32K
-
+#define CONFIG_SIDEWALK_SWI_TASK  0
 
 #define CFG_BLE_PERIPHERAL_PREF_LATENCY 0
 #define CFG_BLE_PERIPHERAL_PREF_TIMEOUT 400
@@ -228,7 +229,6 @@
 #define CONFIG_LOG_LEVEL_WRN 1
 
 //#define  CONFIG_SIDEWALK_THREAD_TIMER 1
-//#define  CONFIG_SIDEWALK_MFG_STORAGE_DIAGNOSTIC 1
 #define  OS_COMPILE_OPTIMIZE_EN 1
 #define LL_FEATURE_SUPPORT_LE_2M_PHY 0
 #define LL_FEATURE_SUPPORT_LE_CODED_PHY 0
@@ -243,16 +243,19 @@
 #define LL_FEATURE_SUPPORT_LE_PERIODIC_ADVERTISING_SYNC 0
 #define LL_FEATURE_SUPPORT_CHANNEL_SELECTION_ALGORITHM2 0
 
-#if config_HW_SELECT
-#define RADIO_MOSI       GPIO_PB7
-#define RADIO_MISO       GPIO_PB6
-#define RADIO_SCLK       GPIO_PB5
-#define RADIO_NSS        GPIO_PB4
+#if (config_HW_SELECT == HW_BOARD_2_2)
 
-#define RADIO_RESET      GPIO_PE0
-#define RADIO_BUSY       GPIO_PE1
-#define RADIO_DIO_1      GPIO_PE2
-#define ANT_SWITCH_POWER GPIO_PE3
+#define RADIO_MOSI       GPIO_PE4
+#define RADIO_MISO       GPIO_PE3
+#define RADIO_SCLK       GPIO_PE0
+#define RADIO_NSS        GPIO_PE1
+//#define RADIO_NSS        GPIO_PC2
+
+#define RADIO_RESET      GPIO_PB5
+#define RADIO_BUSY       GPIO_PA3
+#define RADIO_DIO_1      GPIO_PD3
+#define ANT_SWITCH_POWER GPIO_PE2
+
 #else
 #define RADIO_MOSI       GPIO_PE4
 #define RADIO_MISO       GPIO_PE3
@@ -262,6 +265,7 @@
 
 #define RADIO_RESET      GPIO_PB5
 #define RADIO_BUSY       GPIO_PB4
+//#define RADIO_BUSY       GPIO_PA3
 #define RADIO_DIO_1      GPIO_PD3
 #define ANT_SWITCH_POWER GPIO_PE2
 #endif

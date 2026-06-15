@@ -55,5 +55,5 @@ int log_srv_on_write(uint16_t conn_handle, uint16_t handle, const void *buf, uin
 
 uint16_t sid_ble_get_log_service_ccc_valueHandle(void)
 {
-
+    return 0;
 }

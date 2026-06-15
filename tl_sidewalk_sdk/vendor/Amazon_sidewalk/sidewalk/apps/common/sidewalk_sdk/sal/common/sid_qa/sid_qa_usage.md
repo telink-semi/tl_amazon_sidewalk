@@ -32,7 +32,7 @@ Arguments to the command are shown in <>
                                                       link value is optional, it can take the same values as for sid init command. If link value is not present the one
                                                       set with sid init will be used to call sid_stop api.
 
-    sid send -t <tv> -d <dv> -l <lm> -i <id> -o <low> -a <ack> <retry> <ttl> -r <data>
+    sid send -t <tv> -d <dv> -l <lm> -i <id> -o <low> -a <ack> <retry> <ttl> -loc -r <data>
                                                     - send data over the SID_LINK_TYPE selected, calls the sid_put_msg()API.
                                                       Data field must always be placed at the end of command patametrs. If -r parameter is not preset
                                                       data filed is treated as ascii. Example usage:
@@ -68,6 +68,8 @@ Arguments to the command are shown in <>
                                                           0 - disable ACK
                                                         <retry> - number of retry. 0 ~ 255
                                                         <ttl> - total seconds the stack holds the message in its queue. 0 ~ 65535
+                                                    - loc attach a location request (NW data format 6) to the message.
+                                                        No arguments needed. Works on both BLE and LoRa links.
                                                     - f configure parameters for flood messages
                                                         <flood_msg> - below flood options are supported
                                                           0 - flood messages disabled/stop.
@@ -99,8 +101,14 @@ Arguments to the command are shown in <>
                                                       "-sub_ghz_ctl <ctl_cmd>" - for user control commands with sub-ghz
                                                         <ctl_cmd> Specifies the user commands:
                                                           1 - for SID_LINK2_PROFILE_2 or SID_LINK3_PROFILE_A, temporary stop RX window, RX window will be opened upon next successful uplink.
+                                                      "-l3_tpc_cfg <enabled>" - for SID_LINK_TYPE_3 (LoRa) transmit power control config
+                                                          This API requires the initialization of link type 3. The default config will be used when link type 3 is re-initialized.
+                                                          <enabled> - enable/disable transmit power control
+                                                          0 - disable transmit power control
+                                                          1 - enable transmit power control
                                                       "-lp_set 0x80 <rxwc>" - for SID_LINK3_PROFILE_A, where <rxwc> is the rx_window count parameter.
                                                       "-lp_set 0x81 <rxwc>" - for SID_LINK3_PROFILE_B, where <rxwc> is the rx_window count parameter.
+                                                      "-lp_set 0x82"        - for SID_LINK3_PROFILE_C.
                                                       "-lp_set 0x83 <rxwc>" - for SID_LINK3_PROFILE_D, where <rxwc> is the rx_window count parameter.
                                                           <rxwc> - (uint8) rx window count. 0 represents infinite windows.
                                                       "-lp_get_l2" - Gets link profile and associated parameters for SID_LINK_TYPE_2. Ex: "app: CMD: ERR: 0 Link_profile ID: 1 Wndw_cnt: 0".
@@ -423,6 +431,17 @@ Arguments to the command are shown in <>
                                                     3 - WiFi
                                                     4 - GNSS
 
+                                                    Note: In automatic scaling mode (no level specified), effort
+                                                    levels are ordered by power/accuracy (L1 lowest, L4 highest).
+                                                    On scan failure (e.g. WiFi returns 0 results), the library
+                                                    escalates UP to a more capable method (L3->L4) since a less
+                                                    capable method is unlikely to produce a fix. L2 is always
+                                                    skipped as it is not supported. After a successful scan at a
+                                                    high level, stepdown timers gradually reduce the effort level
+                                                    back down so the next request tries the lower-power method
+                                                    again. Stepdown timeouts are configured via
+                                                    sid_location_config.stepdowns (l4_to_l3, l3_to_l2).
+
     location send_buf <LOCATION_LEVEL>              - Send a test buffer via an available link without re-running a scan. The buffer is a 50 byte payload that does not contain a valid location.
                                                     3 - WiFi
                                                     4 - GNSS
@@ -431,6 +450,11 @@ Arguments to the command are shown in <>
                                                     4 - GNSS
     location alm_start                              - start the almanac demodulation service to update the GNSS
                                                     almanac via satellite. The service cannot currently be stopped.
+    location manage_effort [<0|1>]                  - Get or set the manage_effort flag in the location config.
+                                                    Without arguments, prints the current value.
+                                                    0 - disable automatic effort escalation (e.g. WiFi scan
+                                                        failure will NOT auto-escalate to GNSS)
+                                                    1 - enable automatic effort escalation (default)
 
     gwscan start [<duration_sec>] [<max_gw_num>]    - Start GW scaning tool, this can only be done before sid init. This tool is only available for FSK-enabled builds.
                                                         Format: gwscan start [<duration_sec>] [<max_gw_num>]
@@ -542,6 +566,7 @@ enum sid_device_profile_id {
     /** Device Profile ID for Asynchronous Network */
     SID_LINK3_PROFILE_A = 0x80,
     SID_LINK3_PROFILE_B = 0x81,
+    SID_LINK3_PROFILE_C = 0x82,
     SID_LINK3_PROFILE_D = 0x83
 };
 
@@ -557,7 +582,7 @@ enum sid_rx_window_count {
     SID_RX_WINDOW_CNT_4 = 15,
     SID_RX_WINDOW_CNT_5 = 20,
    /** Used to indicate device is in continuous RX mode */
-    SID_RX_WINDOW_CONTINUOUS = 0xFFFF,
+    SID_RX_WINDOW_CONTINUOUS = 0xFF,
 };
 
 /**
@@ -611,13 +636,18 @@ sid option -lp_set 128 5 0
 sid option -lp_set 128 5 1
 sid option -lp_get_l3
 <info> app: CMD: ERR: 0 Link_profile ID: 129 Wndw_cnt: 0 Low_Latency = 1
-
 // Set device profile to SID_LINK3_PROFILE_B with infinite window count (SID_RX_WINDOW_CNT_INFINITE) and
 // SID_LINK3_LOW_LATENCY_DISABLE
 sid option -lp_set 129 0 0
 // Set device profile to SID_LINK3_PROFILE_B with infinite window count (SID_RX_WINDOW_CNT_INFINITE) and
 // SID_LINK3_LOW_LATENCY_ENABLE
 sid option -lp_set 129 0 1
+sid option -lp_get_l3
+<info> app: CMD: ERR: 0 Link_profile ID: 129 Wndw_cnt: 0 Low_Latency = 1
+// Set device profile to SID_LINK3_PROFILE_C with SID_LINK3_LOW_LATENCY_DISABLE
+sid option -lp_set 130 0
+// Set device profile to SID_LINK3_PROFILE_C with SID_LINK3_LOW_LATENCY_ENABLE
+sid option -lp_set 130 1
 sid option -lp_get_l3
 <info> app: CMD: ERR: 0 Link_profile ID: 129 Wndw_cnt: 0 Low_Latency = 1
 ```

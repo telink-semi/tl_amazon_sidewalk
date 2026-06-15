@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Amazon.com, Inc. or its affiliates. All rights reserved.
+ * Copyright 2021-2024 Amazon.com, Inc. or its affiliates. All rights reserved.
  *
  * AMAZON PROPRIETARY/CONFIDENTIAL
  *
@@ -64,7 +64,7 @@ typedef struct {
 void sid_900_network_interface_data_ifc_get(network_interface_data_ifc * ifc);
 ret_code_t on_message_cb(void *cb_ctx, const uint8_t tr_idx);
 ret_code_t sid_900_ni_control_on_tx_prepare_handle(void *arg, const uint8_t tr_idx, const uint32_t tx_duration_ms);
-sid_error_t sid_900_ni_control_on_ctrl_req_event_handler(struct sid_event * event, void * data);
+void sid_900_ni_control_on_ctrl_req_event_handler(struct sid_event *event, void *data);
 ret_code_t sid_900_ni_control_on_ctrl_req_handle(void *arg, enum rnet_hall_ctrl_info_req req_type, const void *data);
 sid_error_t network_interface_control_init(network_interface_impl_t* impl,
                             const sid_900_network_interface_config * cfg);

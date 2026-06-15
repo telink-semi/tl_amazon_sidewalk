@@ -155,9 +155,9 @@ void ble_mtu_cb(uint16_t connHandle, uint16_t tx_mtu, uint16_t rx_mtu)
     }
 }
 
-const sid_ble_conn_params_t *sid_ble_conn_params_get(void)
+sid_ble_conn_params_t *sid_ble_conn_params_get(void)
 {
-    return (const sid_ble_conn_params_t *)p_conn_params_out;
+    return (sid_ble_conn_params_t *)p_conn_params_out;
 }
 
 void sid_ble_conn_init(void)

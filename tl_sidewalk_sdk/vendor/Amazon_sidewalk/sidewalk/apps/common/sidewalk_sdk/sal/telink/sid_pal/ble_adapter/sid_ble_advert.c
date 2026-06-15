@@ -95,7 +95,7 @@ _attribute_ble_data_retention_ uint32_t fast_duration =  CFG_SIDEWALK_BLE_ADV_IN
 _attribute_ble_data_retention_ uint32_t slow_duration =  0;
 
 #if (FREERTOS_ENABLE)
-typedef struct {
+typedef struct work_delayable{
     TimerHandle_t   hTimer;
     void (*work)(struct work_delayable *work);
     void *user_data;

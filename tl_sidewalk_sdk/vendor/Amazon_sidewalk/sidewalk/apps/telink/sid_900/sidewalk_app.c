@@ -35,8 +35,6 @@
 #ifdef CONFIG_SIDEWALK_SUBGHZ_SUPPORT
 #include <app_subGHz_config.h>
 #endif
-#include <sid_hal_reset_ifc.h>
-//#include <sid_hal_memory_ifc.h>
 #include <stdbool.h>
 #include <bt_app_callbacks.h>
 #include <sid_api.h>
@@ -55,7 +53,7 @@
 
 #define PARAM_UNUSED (0U)
 
-#define MAIN_TASK_STACK_SIZE        (4096 / sizeof(configSTACK_DEPTH_TYPE))
+#define MAIN_TASK_STACK_SIZE       1536
 #define MSG_QUEUE_LEN 10
 #define MSG_LOG_BLOCK_SIZE 80
 
@@ -107,7 +105,11 @@ static QueueHandle_t g_event_queue;
 
 extern char _end[];
 extern uint32_t _STACK_TOP;
-#define MEMORY_POOL_END    (((uint32_t)&_STACK_TOP) - 0x400)
+#define MEMORY_POOL_END    (((uint32_t)&_STACK_TOP) - 0x800)
+
+#if BLE_APP_PM_ENABLE
+void app_sleep_config(void);
+#endif
 
 void * _sbrk(ptrdiff_t incr)
 {
@@ -132,14 +134,14 @@ void app_evt_state_ind(enum evt_ind ind ,uint8_t flag )
     switch(ind)
     {
         case REG_IND:
-            gpio_write(GPIO_LED_RED, flag);
+            gpio_write(GPIO_LED_WHITE, flag);
             break;
         case TIME_SYNC_IND:
             //gpio_write(GPIO_LED_GREEN, flag);
             break;
         case STATE_CONTROL:
-            gpio_write(GPIO_LED_BLUE, flag);
-                break;
+            gpio_write(GPIO_LED_GREEN, flag);
+            break;
         default:
             break;
     }
@@ -248,13 +250,13 @@ static void on_sidewalk_factory_reset(void *context)
     for(int i = 0; i < 3; i++)
     {
         #if UI_LED_ENABLE
-        gpio_write(GPIO_LED_BLUE, 1);
+        gpio_write(GPIO_LED_GREEN, 1);
         //gpio_write(GPIO_LED_GREEN, 1);
-        gpio_write(GPIO_LED_RED, 1);
+        gpio_write(GPIO_LED_WHITE, 1);
         delay_us(50000);
-        gpio_write(GPIO_LED_BLUE, 0);
+        gpio_write(GPIO_LED_GREEN, 0);
         //gpio_write(GPIO_LED_GREEN, 0);
-        gpio_write(GPIO_LED_RED, 0);
+        gpio_write(GPIO_LED_WHITE, 0);
         delay_us(50000);
         #endif
     }
@@ -372,8 +374,7 @@ static int32_t init_and_start_link(app_context_t *context, struct sid_config *co
         }
 #if CONFIG_SID_END_DEVICE_AUTO_CONN_REQ
 
-        enum sid_link_connection_policy set_policy =
-            SID_LINK_CONNECTION_POLICY_AUTO_CONNECT;
+        enum sid_link_connection_policy set_policy = SID_LINK_CONNECTION_POLICY_AUTO_CONNECT;
 
         ret = sid_option(sid_handle, SID_OPTION_SET_LINK_CONNECTION_POLICY, &set_policy,
                    sizeof(set_policy));
@@ -571,7 +572,6 @@ void Portble_btn_l_press(u8 key)
 int app_start(void)
 {
     #if BLE_APP_PM_ENABLE
-    void app_sleep_config(void);
     app_sleep_config();
     #endif
     platform_parameters_t platform_parameters = {
@@ -613,8 +613,11 @@ int app_start(void)
 #if BLE_APP_PM_ENABLE
 extern void app_sid_subg_sleep_enter(u8 e, u8 *p, int n);
 extern void app_sid_subg_wakeup(u8 e, u8 *p, int n);
-extern void proc_keyboard(u8 e, u8 *p, int n);
+#if (FREERTOS_ENABLE)
 extern void proc_keyboardSupend (u8 e, u8 *p, int n);
+#else
+extern void proc_keyboard(u8 e, u8 *p, int n);
+#endif
 #if (UI_BUTTON_ENABLE )
 extern void app_set_button_wakeup(u8 e, u8 *p, int n);
 #endif

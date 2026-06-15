@@ -54,7 +54,7 @@ static int write(long offset, const uint8_t *buf, size_t size)
 //        tlk_printf("write crc addr1 \r\n",offset);
 //    }
 //      tlkapi_send_string_data(APP_LOG_EN, " write flash ", buf, size);
-    flash_write_page(data_flash_addr + offset, size, buf);
+    flash_write_page(data_flash_addr + offset, size,(uint8_t *)buf);
     if(size == 1 && buf[0] == 3)
     {
         tlk_printf("write crc addr \r\n",offset);

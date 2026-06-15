@@ -34,12 +34,4 @@ extern  struct fal_flash_dev telink_onchip_flash2;
 
 
 
-void * pvPortMalloc( unsigned int  xWantedSize );
-void vPortFree( void * pv );
-
-#define FAL_MALLOC                     pvPortMalloc
-//#define FAL_REALLOC                    realloc_nonreten
-#define FAL_FREE                       vPortFree
-
-
 #endif /* _FAL_CFG_H_ */

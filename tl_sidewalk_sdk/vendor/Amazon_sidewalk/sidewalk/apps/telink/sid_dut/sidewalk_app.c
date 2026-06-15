@@ -23,6 +23,7 @@
  *******************************************************************************************************/
 #include "tl_common.h"
 #include "drivers.h"
+#include "stack/ble/ble.h"
 #include "sid_ble_adapter.h"
 #include <FreeRTOS.h>
 #include <queue.h>
@@ -34,8 +35,6 @@
 #ifdef CONFIG_SIDEWALK_SUBGHZ_SUPPORT
 #include <app_subGHz_config.h>
 #endif
-#include <sid_hal_reset_ifc.h>
-//#include <sid_hal_memory_ifc.h>
 #include <stdbool.h>
 #include <bt_app_callbacks.h>
 #include <sid_api.h>
@@ -53,7 +52,7 @@
 
 #include "app_mem.h"
 #include "app_buffer.h"
-
+#include "app_uart.h"
 
 #define KEY1  0x01
 #define KEY2  0x2
@@ -122,6 +121,7 @@ static void pwr_meas_is_unblocked(void)
 {
 
 #if FREERTOS_ENABLE
+    u32 xPortIsInsideInterrupt(void);
     // sid_qa processing is unblocked therefore the owning RTOS task can be resumed
     if (xPortIsInsideInterrupt()) {
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
@@ -243,7 +243,7 @@ static void set_sub_ghz_cfg(struct sid_sub_ghz_links_config *sub_ghz_cfg)
     if (!sub_ghz_cfg) {
         TL_LOG_E("Null pointer passed while setting sub ghz cfg");
     }
-    struct sid_sub_ghz_links_config *cfg = app_get_sub_ghz_config();
+    struct sid_sub_ghz_links_config *cfg = (struct sid_sub_ghz_links_config *)app_get_sub_ghz_config();
     memcpy(cfg, sub_ghz_cfg, sizeof(*cfg));
 #endif
 }
@@ -269,6 +269,11 @@ static struct sid_device_info dev_info = {
     .device_kind = dev_kind,
 };
 
+static struct sid_device_info_config  info_config = {
+    .info = &dev_info,
+    .callbacks = NULL,
+};
+
 int app_start(void)
 {
     platform_parameters_t platform_parameters = {
@@ -290,7 +295,7 @@ int app_start(void)
     struct sid_qa_callbacks qa_callbacks = {
         .reboot_cmd = reboot_func,
         .set_sub_ghz_cfg = set_sub_ghz_cfg,
-        .device_info_cfg = &dev_info,
+        .device_info_cfg = &info_config,
     };
 
     sid_qa_init(&qa_callbacks);
@@ -326,7 +331,7 @@ int app_sidewalk_init(void)
     struct sid_qa_callbacks qa_callbacks = {
         .reboot_cmd = reboot_func,
         .set_sub_ghz_cfg = set_sub_ghz_cfg,
-        .device_info_cfg = &dev_info,
+        .device_info_cfg = &info_config,
     };
 
     sid_qa_init(&qa_callbacks);
@@ -359,4 +364,29 @@ void app_sidewalk_sch(void)
      sid_cli_process();
      sid_qa_process(QA_PROC_NO_WAIT);
 
+}
+
+
+_attribute_ram_code_ void app_sid_sleep_enter(u8 e, u8 *p, int n)
+{
+    gpio_set_up_down_res(RADIO_NSS,PM_PIN_PULLUP_10K);
+    gpio_output_dis(RADIO_NSS);
+    trng_disable();
+}
+
+_attribute_ram_code_ void app_sid_wakeup(u8 e, u8 *p, int n)
+{
+    gpio_function_en(RADIO_NSS);
+    gpio_output_en(RADIO_NSS);
+    gpio_input_dis(RADIO_NSS);
+    gpio_set_high_level(RADIO_NSS);   // low level is valid
+    gpio_analog_resistance_init();
+    trng_enable();
+
+}
+
+void app_sleep_config(void)
+{
+    blc_ll_registerTelinkControllerEventCallback(BLT_EV_FLAG_SLEEP_ENTER, &app_sid_sleep_enter);
+    blc_ll_registerTelinkControllerEventCallback(BLT_EV_FLAG_SUSPEND_EXIT, &app_sid_wakeup);
 }

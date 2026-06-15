@@ -15,6 +15,7 @@
 #include "tl_common.h"
 #include "drivers.h"
 #include "stack/ble/ble.h"
+#include "sid_ble_adapter.h"
 #include <sid_app_sbdt_demo.h>
 #include <sid_sdk_version.h>
 
@@ -63,19 +64,19 @@ static const struct sid_demo_sdk_version current_sdk_version = {
 static app_context_t *g_app_context;
 void app_sid_sbdt_start(int file_size);
 
-static uint32_t crc32_compute(uint8_t const *data, uint32_t size, uint32_t const *prev_crc)
-{
-    uint32_t crc;
-
-    crc = (prev_crc == NULL) ? 0xFFFFFFFF : ~(*prev_crc);
-    for (uint32_t i = 0; i < size; i++) {
-        crc = crc ^ data[i];
-        for (uint32_t j = 8; j > 0; j--) {
-            crc = (crc >> 1) ^ (0xEDB88320U & ((crc & 1) ? 0xFFFFFFFF : 0));
-        }
-    }
-    return ~crc;
-}
+//static uint32_t crc32_compute(uint8_t const *data, uint32_t size, uint32_t const *prev_crc)
+//{
+//    uint32_t crc;
+//
+//    crc = (prev_crc == NULL) ? 0xFFFFFFFF : ~(*prev_crc);
+//    for (uint32_t i = 0; i < size; i++) {
+//        crc = crc ^ data[i];
+//        for (uint32_t j = 8; j > 0; j--) {
+//            crc = (crc >> 1) ^ (0xEDB88320U & ((crc & 1) ? 0xFFFFFFFF : 0));
+//        }
+//    }
+//    return ~crc;
+//}
 
 static void queue_event(QueueHandle_t queue, enum event_type event, void *data, bool in_isr)
 {
@@ -94,16 +95,16 @@ static void queue_event(QueueHandle_t queue, enum event_type event, void *data, 
     }
 }
 
-static void queue_rx_msg(QueueHandle_t queue, struct app_demo_rx_msg *rx_msg, bool in_isr)
-{
-    if (in_isr) {
-        BaseType_t task_woken = pdFALSE;
-        xQueueSendToBackFromISR(queue, rx_msg, &task_woken);
-        portYIELD_FROM_ISR(task_woken);
-    } else {
-        xQueueSendToBack(queue, rx_msg, 0);
-    }
-}
+//static void queue_rx_msg(QueueHandle_t queue, struct app_demo_rx_msg *rx_msg, bool in_isr)
+//{
+//    if (in_isr) {
+//        BaseType_t task_woken = pdFALSE;
+//        xQueueSendToBackFromISR(queue, rx_msg, &task_woken);
+//        portYIELD_FROM_ISR(task_woken);
+//    } else {
+//        xQueueSendToBack(queue, rx_msg, 0);
+//    }
+//}
 
 static void log_sid_msg(const struct sid_msg *msg)
 {
@@ -183,22 +184,26 @@ static void cap_timer_cb(TimerHandle_t xTimer)
 
 static void on_sidewalk_event(bool in_isr, void *context)
 {
+    ARG_UNUSED(context);
     queue_event(g_app_context->event_queue, EVENT_TYPE_SIDEWALK, NULL, in_isr);
 }
 
 static void on_sidewalk_msg_sent(const struct sid_msg_desc *msg_desc, void *context)
 {
+    ARG_UNUSED(context);
     SID_PAL_LOG_INFO("sent message(type: %d, id: %u)", (int)msg_desc->type, msg_desc->id);
 }
 
 static void on_sidewalk_send_error(sid_error_t error, const struct sid_msg_desc *msg_desc, void *context)
 {
+    ARG_UNUSED(context);
     SID_PAL_LOG_ERROR("failed to send message(type: %d, id: %u), err:%d", (int)msg_desc->type, msg_desc->id,
                       (int)error);
 }
 
 static void on_sidewalk_status_changed(const struct sid_status *status, void *context)
 {
+    ARG_UNUSED(context);
     SID_PAL_LOG_INFO("status changed: %d", (int)status->state);
     switch (status->state) {
         case SID_STATE_READY:
@@ -238,6 +243,7 @@ static void on_sidewalk_status_changed(const struct sid_status *status, void *co
 
 static void on_sidewalk_factory_reset(void *context)
 {
+    ARG_UNUSED(context);
     SID_PAL_LOG_ERROR("factory reset notification received from sid api");
     g_app_context->hw_ifc.platform_reset();
 }
@@ -253,6 +259,7 @@ static void set_cap_done(void)
 
 static void on_sidewalk_msg_received(const struct sid_msg_desc *msg_desc, const struct sid_msg *msg, void *context)
 {
+    ARG_UNUSED(context);
     static uint8_t temp_msg_payload[64];
     memset(temp_msg_payload, 0, sizeof(temp_msg_payload));
     struct sid_demo_msg demo_msg = {.payload = temp_msg_payload};
@@ -317,6 +324,7 @@ static void on_sbdt_transfer_request(const struct sid_bulk_data_transfer_request
                                      struct sid_bulk_data_transfer_response *const transfer_response,
                                      void *context)
 {
+    ARG_UNUSED(context);
     if (!transfer_response || !transfer_request) {
         return;
     }
@@ -376,6 +384,7 @@ static void on_sbdt_data_received(const struct sid_bulk_data_transfer_desc *cons
                                   const struct sid_bulk_data_transfer_buffer *const buffer,
                                   void *context)
 {
+    ARG_UNUSED(context);
     if (desc->file_offset == 0) {
         sid_pal_storage_kv_group_delete(FILE_TRANSFER_OTA_GROUP);
     }
@@ -456,6 +465,7 @@ err:
 
 static void on_sbdt_finalize_request(uint32_t file_id, void *context)
 {
+    ARG_UNUSED(context);
     SID_PAL_LOG_INFO("%s", __func__);
 
     uint8_t iter = get_instace_by_file_id(file_id);
@@ -506,6 +516,7 @@ static void on_sbdt_finalize_request(uint32_t file_id, void *context)
 
 static void on_sbdt_release_scratch_buffer(uint32_t file_id, void *context)
 {
+    ARG_UNUSED(context);
     SID_PAL_LOG_INFO("%s", __func__);
 
     uint8_t iter = get_instace_by_file_id(file_id);
@@ -528,11 +539,13 @@ static void on_sbdt_release_scratch_buffer(uint32_t file_id, void *context)
 
 static void on_sbdt_error(uint32_t file_id, void *context)
 {
+    ARG_UNUSED(context);
     SID_PAL_LOG_INFO("%s", __func__);
 }
 
 static void on_sbdt_cancel_request(uint32_t file_id, void *context)
 {
+    ARG_UNUSED(context);
     #if (APP_FLASH_PROTECTION_ENABLE)
     app_flash_protection_operation(FLASH_OP_EVT_STACK_OTA_WRITE_NEW_FW_END, 0, 0);
     #endif
@@ -561,11 +574,13 @@ struct demo_event_handler {
 
 static void process_event_type_sidewalk(const struct app_demo_event *event)
 {
+    ARG_UNUSED(event);
     sid_process(g_app_context->sidewalk_handle);
 }
 
 static void process_event_type_factory_reset(const struct app_demo_event *event)
 {
+    ARG_UNUSED(event);
     factory_reset();
 }
 
@@ -577,6 +592,7 @@ static void connect_ble_cb(TimerHandle_t xTimer)
 
 static void process_event_connect_request_type_1(const struct app_demo_event *event)
 {
+    ARG_UNUSED(event);
     SID_PAL_LOG_INFO("Connecting link type 1");
     sid_error_t ret = sid_ble_bcn_connection_request(g_app_context->sidewalk_handle, true);
     if (ret != SID_ERROR_ALREADY_EXISTS && ret) {
@@ -592,6 +608,7 @@ static void process_event_connect_request_type_1(const struct app_demo_event *ev
 
 static void process_event_send_message(const struct app_demo_event *event)
 {
+    ARG_UNUSED(event);
     g_app_context->counter++;
     struct sid_msg msg = {
         .data = (uint8_t *)&g_app_context->counter,
@@ -711,6 +728,7 @@ static void process_event_send_ota_progress(const struct app_demo_event *event)
 
 static void process_event_send_ota_capability(const struct app_demo_event *event)
 {
+    ARG_UNUSED(event);
     struct sid_status status = {};
     sid_error_t result = sid_get_status(g_app_context->sidewalk_handle, &status);
     if (result != SID_ERROR_NONE) {
@@ -799,6 +817,7 @@ static void process_event_send_ota_status(uint32_t file_id, uint32_t status)
 
 static void process_event_ota_status(const struct app_demo_event *event)
 {
+    ARG_UNUSED(event);
 #ifndef STR
 #define STR(a_) STR_(a_)
 #define STR_(a_) #a_
@@ -852,6 +871,7 @@ start_capability:
 
 static void process_event_reboot(const struct app_demo_event *event)
 {
+    ARG_UNUSED(event);
     g_app_context->hw_ifc.platform_reset();
 }
 

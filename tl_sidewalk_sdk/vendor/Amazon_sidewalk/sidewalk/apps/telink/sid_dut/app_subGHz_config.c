@@ -25,8 +25,11 @@
 #include <sid_pal_serial_bus_ifc.h>
 #include <sid_pal_radio_ifc.h>
 #include <sid_pal_serial_bus_telink_spi.h>
+#include <sid_pal_gpio_ifc.h>
+#include <sid_pal_uptime_ifc.h>
+
 #include <sx126x_config.h>
-//#include <target/memory.h>
+#include <sx126x_radio.h>
 
 #include "app_subGHz_config.h"
 
@@ -62,6 +65,8 @@ u32 app_get_trim_addr(void);
 #define RADIO_RX_LNA_GAIN                                          0
 #define RADIO_MAX_CAD_SYMBOL                                       SID_PAL_RADIO_LORA_CAD_04_SYMBOL
 #define RADIO_ANT_GAIN(X)                                          ((X) * 100)
+
+#define RADIO_DEFAULT_TRIM_CAP_VAL                                0x1212
 
 const gspi_pin_config_t pinmap = {
     .spi_csn_pin      = GPIO_NONE_PIN,
@@ -112,7 +117,7 @@ void app_radio_dio_irq_handler(void)
 }
 
 // PA config callback
-int pa_cfg_callback(int8_t req_dbm, radio_sx126x_pa_cfg_t *out)
+int32_t pa_cfg_callback(int8_t req_dbm, radio_sx126x_pa_cfg_t *out)
 {
     out->pa_duty_cycle = 0x04;
     out->hp_max        = 0x07;
@@ -154,7 +159,7 @@ int32_t app_sid_radio_sx126x_get_mfg_trim_val(uint16_t *trim)
     if(NULL == trim)
         return -1;
     u32 data = APP_INVALID_TRIM_VALUE;
-    flash_read_page(app_get_trim_addr(),sizeof(data),&data);
+    flash_read_page(app_get_trim_addr(),sizeof(data),(uint8_t *)&data);
     if(data == APP_INVALID_TRIM_VALUE)
     {
         *trim = CONFIG_SIDEWALK_SID_SUBG_TRIM_VAL;
@@ -184,7 +189,7 @@ const radio_sx126x_device_config_t radio_sx1262_cfg = {
     .gpio_radio_busy = RADIO_BUSY,
     .gpio_int1       = RADIO_DIO_1,
     .gpio_power      = RADIO_RESET,   // 若无电源控制脚就留 NOT_CONNECTED
-    .gpio_tx_bypass  = GPIO_NONE_PIN, // 若有外置PA/FEM再填
+    .gpio_tx_bypass  = HALO_GPIO_NOT_CONNECTED, // 若有外置PA/FEM再填
     .gpio_rf_sw_ena  = ANT_SWITCH_POWER,
     .trim_cap_val_callback = app_sid_radio_sx126x_get_mfg_trim_val,
     .pa_cfg_callback = pa_cfg_callback,
@@ -202,6 +207,7 @@ const radio_sx126x_device_config_t radio_sx1262_cfg = {
     .tcxo =
         {
             .ctrl = SX126X_TCXO_CTRL_NONE,
+            .dio3_to_mcu_pin = HALO_GPIO_NOT_CONNECTED,
         },
 
     .regional_config =
@@ -262,26 +268,174 @@ void sx126x_bringup(void)
 }
 
 
-_attribute_ram_code_ void app_sid_sleep_enter(u8 e, u8 *p, int n)
+
+
+#if (CONFIG_DIO3_FOR_ANT_SW)
+/*
+ * KGM100XB DVT1 use SX126X DIO3 to supply power for ANT SW.
+ * Configuration:
+ * 1. Set bit 3 of register@0x0580 (output enable on DIO3)
+ * 2. Clear bit 3 of register@0x0583 (input disable on DIO3)
+ * 3. Clear bit 3 of register@0x0584 (pull-up disable on DIO3) - optional
+ * 4. Clear bit 3 of register@0x0585 (pull-down disable on DIO3) - optional
+ * 5. Set bits [0 to 2] of register@0x0920 to the output voltage you need on DIO3
+ *    (see Table 13-35: tcxoVoltage Configuration Definition in the related datasheet)
+ *
+ * Output programming:
+ * - Set bit 3 of register@0x0920 to have DIO3 "high"
+ * - Clear bit 3 of register@0x0920 to have DIO3 "low"
+ */
+int32_t sx126x_dio3_output_voltage(uint8_t voltage)
 {
-    gpio_set_up_down_res(RADIO_NSS,PM_PIN_PULLUP_10K);
-    gpio_output_dis(RADIO_NSS);
-    trng_disable();
+  halo_drv_semtech_ctx_t *ctx = sx126x_get_drv_ctx();
+  int32_t err = SID_ERROR_GENERIC;
+  uint8_t reg_val = 0;
+  do {
+//    SL_SID_LOG_PAL_INFO("pal sx126x: sx126x_dio3_output_voltage %d", voltage);
+
+    reg_val = 0x1 << 3;
+    // set bit 3 of 0x0580
+    if (sx126x_read_register(ctx, 0x0580, &reg_val, 1) != SX126X_STATUS_OK) {
+        fflush(NULL);
+        TL_LOG_E("sx126x_read_register error %x",ctx);
+      break;
+    }
+    reg_val |= (0x1 << 3);
+    if (sx126x_write_register(ctx, 0x0580, &reg_val, 1) != SX126X_STATUS_OK) {
+        fflush(NULL);
+        TL_LOG_E("sx126x_write_register error %x",ctx);
+      break;
+    }
+    // clear bit 3 of 0x0583
+    if (sx126x_read_register(ctx, 0x0583, &reg_val, 1) != SX126X_STATUS_OK) {
+        fflush(NULL);
+          TL_LOG_E("sx126x_read_register error2 %x",ctx);
+      break;
+    }
+    reg_val &= ~(0x1 << 3);
+    if (sx126x_write_register(ctx, 0x0583, &reg_val, 1) != SX126X_STATUS_OK) {
+        fflush(NULL);
+        TL_LOG_E("sx126x_write_register error2 %x",ctx);
+      break;
+    }
+
+    reg_val = voltage;     // Set voltage
+    if (sx126x_write_register(ctx, 0x0920, &reg_val, 1) != SX126X_STATUS_OK) {
+        fflush(NULL);
+        TL_LOG_E("sx126x_read_register error3 %x",ctx);
+      break;
+    }
+
+    // Set Output
+    if (sx126x_read_register(ctx, 0x0920, &reg_val, 1) != SX126X_STATUS_OK) {
+        fflush(NULL);
+        TL_LOG_E("sx126x_read_register error4 %x",ctx);
+      break;
+    }
+    reg_val |= (0x1 << 3);     // High output
+    if (sx126x_write_register(ctx, 0x0920, &reg_val, 1) != SX126X_STATUS_OK) {
+        fflush(NULL);
+        TL_LOG_E("sx126x_write_register error3 %x",ctx);
+      break;
+    }
+    err = SID_ERROR_NONE;
+  } while (0);
+  return 0;
 }
 
-_attribute_ram_code_ void app_sid_wakeup(u8 e, u8 *p, int n)
+int32_t sx126x_dio3_gpio_clear(void)
 {
-    gpio_function_en(RADIO_NSS);
-    gpio_output_en(RADIO_NSS);
-    gpio_input_dis(RADIO_NSS);
-    gpio_set_high_level(RADIO_NSS);   // low level is valid
-    gpio_analog_resistance_init();
-    trng_enable();
+  int32_t status = SX126X_STATUS_OK;
+  uint8_t reg_val = 0x00;
+  halo_drv_semtech_ctx_t *ctx = sx126x_get_drv_ctx();
+  // set bit 3 of 0x0920
+  status = sx126x_read_register(ctx, 0x0920, &reg_val, 1);
+  reg_val &= ~(1 << 3);
+  status = sx126x_write_register(ctx, 0x0920, &reg_val, 1);
 
+  return status;
 }
 
-void app_sleep_config(void)
+#endif
+
+
+static void radio_irq(uint32_t pin, void * callback_arg)
 {
-    blc_ll_registerTelinkControllerEventCallback(BLT_EV_FLAG_SLEEP_ENTER, &app_sid_sleep_enter);
-    blc_ll_registerTelinkControllerEventCallback(BLT_EV_FLAG_SUSPEND_EXIT, &app_sid_wakeup);
+    (void)callback_arg;
+    halo_drv_semtech_ctx_t *ctx = sx126x_get_drv_ctx();
+    uint8_t pinState;
+    if (sid_pal_gpio_read(pin, &pinState) == SID_ERROR_NONE) {
+        if (pinState) {
+            sid_pal_uptime_now(&(ctx->radio_rx_packet->rcv_tm));
+            ctx->irq_handler();
+        }
+    }
+}
+
+int32_t sid_pal_radio_reinit(void)
+{
+    int32_t err = 0;
+    halo_drv_semtech_ctx_t *ctx = sx126x_get_drv_ctx();
+#ifdef BOARD_HAL_IO_EXPANDER_SUBG_BAND_PIN
+        if (sid_pal_gpio_set_direction(BOARD_HAL_EXP_GPIO( BOARD_HAL_IO_EXPANDER_SUBG_BAND_PIN),
+            SID_PAL_GPIO_DIRECTION_OUTPUT) != SID_ERROR_NONE) {
+            return RADIO_ERROR_IO_ERROR;
+        }
+
+        if (sid_pal_gpio_write(BOARD_HAL_EXP_GPIO( BOARD_HAL_IO_EXPANDER_SUBG_BAND_PIN), 0) != SID_ERROR_NONE) {
+            return RADIO_ERROR_IO_ERROR;
+        }
+#endif
+
+    if (ctx->config->gpio_radio_busy != HALO_GPIO_NOT_CONNECTED) {
+        if (sid_pal_gpio_set_direction(ctx->config->gpio_radio_busy,
+            SID_PAL_GPIO_DIRECTION_INPUT) != SID_ERROR_NONE) {
+            return RADIO_ERROR_IO_ERROR;
+        }
+    }
+
+    if (ctx->config->gpio_tx_bypass != HALO_GPIO_NOT_CONNECTED) {
+        if (sid_pal_gpio_set_direction(ctx->config->gpio_tx_bypass,
+            SID_PAL_GPIO_DIRECTION_OUTPUT) != SID_ERROR_NONE) {
+            return RADIO_ERROR_IO_ERROR;
+        }
+    }
+
+    if (ctx->config->gpio_rf_sw_ena != HALO_GPIO_NOT_CONNECTED) {
+        if (sid_pal_gpio_set_direction(ctx->config->gpio_rf_sw_ena,
+            SID_PAL_GPIO_DIRECTION_OUTPUT) != SID_ERROR_NONE) {
+            return RADIO_ERROR_IO_ERROR;
+        }
+    }
+    if (ctx->config->gpio_power != HALO_GPIO_NOT_CONNECTED) {
+        if (sid_pal_gpio_set_direction_to_high(ctx->config->gpio_power,
+            SID_PAL_GPIO_DIRECTION_OUTPUT) != SID_ERROR_NONE) {
+            return RADIO_ERROR_IO_ERROR;
+        }
+    }
+
+    if (ctx->config->pa_cfg_callback == NULL) {
+        return RADIO_ERROR_IO_ERROR;
+    }
+
+    if (ctx->config->trim_cap_val_callback != NULL) {
+        ctx->config->trim_cap_val_callback(&ctx->trim);
+    } else {
+        ctx->trim = RADIO_DEFAULT_TRIM_CAP_VAL;
+    }
+
+    if (ctx->config->bus_factory->create(&ctx->bus_iface, ctx->config->bus_factory->config) != SID_ERROR_NONE) {
+        err = RADIO_ERROR_IO_ERROR;
+        return RADIO_ERROR_IO_ERROR;
+    }
+
+
+    if (sid_pal_gpio_set_irq(ctx->config->gpio_int1,
+            SID_PAL_GPIO_IRQ_TRIGGER_RISING, radio_irq, NULL) != SID_ERROR_NONE) {
+        err = RADIO_ERROR_IO_ERROR;
+        return RADIO_ERROR_IO_ERROR;
+    }
+
+    HAOJIE_DBG_CHN6_LOW;
+    return err;
 }

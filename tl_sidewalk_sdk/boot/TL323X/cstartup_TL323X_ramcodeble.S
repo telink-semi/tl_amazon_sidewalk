@@ -66,8 +66,8 @@
 #define  SRAM_SIZE     SRAM_160K
 
 #if(SRAM_SIZE  ==   SRAM_160K)
-    .equ __D25F_IRAM_SIZE,   4 //128KB
-    .equ __D25F_DRAM_SIZE,   1 //64KB
+    .equ __D25F_IRAM_SIZE,   3 //96KB
+    .equ __D25F_DRAM_SIZE,   2 //64KB
 #elif(SRAM_SIZE  ==   SRAM_96K)
     .equ __D25F_IRAM_SIZE,   2 //64KB
     .equ __D25F_DRAM_SIZE,   1 //32KB

@@ -29,14 +29,12 @@
 #include "stack/ble/ble.h"
 #include "sid_ble_adapter.h"
 #include <sid_pal_crypto_ifc.h>
-#ifdef CONFIG_SIDEWALK_CRYPTO_PSA_KEY_STORAGE
-#include <sid_crypto_keys.h>
-#endif /* CONFIG_SIDEWALK_CRYPTO_PSA_KEY_STORAGE */
+#include <sid_pal_assert_ifc.h>
 
 #include <psa/crypto.h>
 #include <psa/crypto_extra.h>
 #include "lib/include/pke/ed25519.h"
-#include "lib/include/pke/ed25519.h"
+#include "lib/include/pke/x25519.h"
 #if (FREERTOS_ENABLE)
     #include "tlk_riscv.h"
     #include <FreeRTOS.h>
@@ -66,32 +64,13 @@
 /* Crypto initialization global flag. */
 static bool is_initialized = false;
 
+void trng_dig_dis(void);
 
-//_attribute_ble_data_retention_ static uint8_t ed25519_public_key[32];
-//_attribute_ble_data_retention_ static uint8_t ed25519_private_key[64];
-//_attribute_ble_data_retention_ static bool ed25519_keys_present = false;
-//
-//
-//_attribute_ble_data_retention_ static uint8_t x25519_public_key[32];
-//_attribute_ble_data_retention_ static uint8_t x25519_private_key[64];
-//_attribute_ble_data_retention_ static bool x25519_keys_present = false;
-
-int mbedtls_platform_set_calloc_free( void * (*calloc_func)( size_t, size_t ),
-                              void (*free_func)( void * ) );
 sid_error_t sid_pal_crypto_init(void)
 {
 
     trng_dig_en();
-    //pke_dig_en();
     hash_dig_en();
-    //ske_dig_en();
-//    memset(ed25519_public_key,0,sizeof(ed25519_public_key));
-//    memset(ed25519_private_key,0,sizeof(ed25519_private_key));
-//    memset(x25519_public_key,0,sizeof(x25519_public_key));
-//    memset(x25519_private_key,0,sizeof(x25519_private_key));
-//
-//    ed25519_keys_present = false;
-//    x25519_keys_present = false;
 
     is_initialized = true;
     TL_LOG_D("Init success!");
@@ -190,7 +169,7 @@ sid_error_t sid_pal_crypto_hw_hmac(sid_pal_hmac_params_t *params)
     case SID_PAL_HASH_SHA512:
         void hmac_sha512(unsigned char *key, unsigned int keyByteLen, unsigned char *msg, unsigned int msgByteLen, unsigned char mac[64]);
 
-        hmac_sha512(params->key, params->key_size, params->data, params->data_size, params->digest);
+        hmac_sha512((unsigned char *)params->key, params->key_size, (unsigned char *)params->data, params->data_size, params->digest);
         return SID_ERROR_NONE;
         break;
     default:
@@ -286,7 +265,7 @@ sid_error_t sid_pal_crypto_aes_crypt(sid_pal_aes_params_t *params)
         break;
 
     case SID_PAL_CRYPTO_MAC_CALCULATE:
-        res = ske_lp_cmac(SKE_ALG_AES_128, SKE_GENERATE_MAC, params->key, 0, params->in, params->in_size,
+        res = ske_lp_cmac(SKE_ALG_AES_128, SKE_GENERATE_MAC, params->key, 0, (unsigned char *)params->in, params->in_size,
             params->out, params->out_size);
         break;
 
@@ -307,15 +286,15 @@ sid_error_t sid_pal_crypto_aes_crypt(sid_pal_aes_params_t *params)
             uint32_t skt_len = (params->in_size &0xFFFFFFF0) + 16;
              memset(temp_in_buf,0,PAL_AES_BLOCK_SIZE_MAX_SIZE);
              memcpy(temp_in_buf,params->in,params->in_size);
-             res = ske_lp_crypto(SKE_ALG_AES_128, SKE_MODE_CTR, crypto, params->key, 0, params->iv,
+             res = ske_lp_crypto(SKE_ALG_AES_128, SKE_MODE_CTR, crypto, params->key, 0, (unsigned char *)params->iv,
                      temp_in_buf,temp_in_buf,skt_len);
-             memcpy(params->out,temp_in_buf,params->in_size);
+             memcpy(params->out,temp_in_buf,params->out_size);
          }
 
          else
          {
-              res = ske_lp_crypto(SKE_ALG_AES_128, SKE_MODE_CTR, crypto, params->key, 0, params->iv,
-                      params->in,params->out,params->in_size);
+              res = ske_lp_crypto(SKE_ALG_AES_128, SKE_MODE_CTR, crypto, params->key, 0, (unsigned char *)params->iv,
+                      (unsigned char *)params->in,params->out,params->in_size);
          }
 
     }
@@ -383,13 +362,13 @@ sid_error_t sid_pal_crypto_aead_crypt(sid_pal_aead_params_t *params)
 
     switch (params->algo) {
     case SID_PAL_AEAD_GCM_128:
-        res = ske_lp_gcm_crypto(SKE_ALG_AES_128, en_de, params->key, 0, params->iv, params->iv_size,
-            params->aad, params->aad_size, params->in, params->out, params->in_size,
+        res = ske_lp_gcm_crypto(SKE_ALG_AES_128, en_de, params->key, 0, (unsigned char *)params->iv, params->iv_size,
+            params->aad, params->aad_size, (unsigned char *)params->in, params->out, params->in_size,
             params->mac, params->mac_size);
         break;
     case SID_PAL_AEAD_CCM_128:
-        res = ske_lp_ccm_crypto(SKE_ALG_AES_128, en_de, params->key, 0, params->iv,
-            params->mac_size, 15-params->iv_size, params->aad, params->aad_size, params->in, params->out, params->in_size,
+        res = ske_lp_ccm_crypto(SKE_ALG_AES_128, en_de, params->key, 0, (unsigned char *)params->iv,
+            params->mac_size, 15-params->iv_size, params->aad, params->aad_size, (unsigned char *)params->in, params->out, params->in_size,
             params->mac);
         break;
     case SID_PAL_AEAD_CCM_STAR_128:
@@ -566,7 +545,7 @@ static sid_error_t sid_pal_crypto_ecc_256r1_key_gen(sid_pal_ecc_key_gen_params_t
 {
  TL_LOG_D("secp256r1_curve_dat %d %d!",params->prk_size,params->puk_size);
     uint32_t res;
-    res = eccp_getkey(&secp256r1, params->prk, params->puk);
+    res = eccp_getkey((const eccp_curve_t *)secp256r1, params->prk, params->puk);
     if (res == PKE_SUCCESS) {
         return SID_ERROR_NONE;
     } else {

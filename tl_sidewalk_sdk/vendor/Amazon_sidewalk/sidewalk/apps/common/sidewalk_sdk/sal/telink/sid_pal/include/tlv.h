@@ -62,12 +62,12 @@ typedef struct {
 
 int tlv_read_marker(const tlv_db_t *db, uint8_t *buf, uint8_t sz);
 
-int tlv_write_marker(tlv_db_t *db, const uint8_t *buf, uint8_t sz);
+int tlv_write_marker(tlv_db_t *db,  uint8_t *buf, uint8_t sz);
 
 int tlv_fetch(const tlv_db_t *db, tlv_tag_t tag, uint8_t *buf, uint16_t want);
 
 int tlv_find(const tlv_db_t *db, tlv_tag_t tag, tlv_item_hdr_t *out_hdr);
 
-int tlv_store(tlv_db_t *db, tlv_tag_t tag, const uint8_t *data, uint16_t sz);
+int tlv_store(tlv_db_t *db, tlv_tag_t tag,  uint8_t *data, uint16_t sz);
 
 #endif

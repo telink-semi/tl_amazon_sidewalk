@@ -64,13 +64,18 @@ of the stack used by main.  Using the linker script method will repurpose the
 stack that was used by main before the scheduler was started for use as the
 interrupt stack after the scheduler has started. */
 #ifdef configISR_STACK_SIZE_WORDS
+#if AMAZON_SIDEWALK_OPTIMIZE_ISR_STACK
+    PRIVILEGED_DATA static __attribute__ ((aligned(16))) StackType_t xISRStack[ configISR_PLIC_STACK_SIZE ] = { 0 };
+     PRIVILEGED_DATA StackType_t xISRStackTop = ( StackType_t ) &( xISRStack[ configISR_PLIC_STACK_SIZE & ~portBYTE_ALIGNMENT_MASK ] );
+#else
     PRIVILEGED_DATA static __attribute__ ((aligned(16))) StackType_t xISRStack[ configISR_STACK_SIZE_WORDS ] = { 0 };
     PRIVILEGED_DATA StackType_t xISRStackTop = ( StackType_t ) &( xISRStack[ configISR_STACK_SIZE_WORDS & ~portBYTE_ALIGNMENT_MASK ] );
-
+#endif
     /* Don't use 0xa5 as the stack fill bytes as that is used by the kernerl for
     the task stacks, and so will legitimately appear in many positions within
     the ISR stack. */
     #define portISR_STACK_FILL_BYTE 0xee
+
 #else
     extern const uint32_t __freertos_irq_stack_top[];
     PRIVILEGED_DATA StackType_t xISRStackTop = ( StackType_t ) __freertos_irq_stack_top;
@@ -157,7 +162,9 @@ extern void xPortStartFirstTask( void );
 
         #ifdef configISR_STACK_SIZE_WORDS
         {
+            #if !AMAZON_SIDEWALK_OPTIMIZE_ISR_STACK
             memset( ( void * ) xISRStack, portISR_STACK_FILL_BYTE, sizeof( xISRStack ) );
+            #endif
         }
         #endif   /* configISR_STACK_SIZE_WORDS */
     }
@@ -192,6 +199,7 @@ void vPortEndScheduler( void )
 void vAssertCalled( const char * pcFile, unsigned long ulLine ){
     ( void ) pcFile; ( void ) ulLine; 
     printf("assert fail: %s, %ld\r\n", pcFile, ulLine);
+    fflush(NULL);
     for( ;; );
 }
 
@@ -229,10 +237,16 @@ void vApplicationMallocFailedHook( void )
 
 #if (OS_SEPARATE_STACK_SPACE) //BLE SDK use
 _attribute_data_retention_sec_ volatile unsigned int  g_plic_switch_sp_flag=0;
- static __attribute__ ((aligned(16))) unsigned long plicISRStack[ configISR_PLIC_STACK_SIZE ] = { 0 };
+#if AMAZON_SIDEWALK_OPTIMIZE_ISR_STACK
+//#if 0
+_attribute_data_retention_sec_ unsigned long tlk_plicISRStackTop =  ( StackType_t ) &( xISRStack[ configISR_PLIC_STACK_SIZE & ~portBYTE_ALIGNMENT_MASK ] );
+
+#else
+//static
+__attribute__ ((aligned(16))) unsigned long plicISRStack[ configISR_PLIC_STACK_SIZE ] = { 0 };
 _attribute_data_retention_sec_ unsigned long tlk_plicISRStackTop = ( unsigned long ) &( plicISRStack[ configISR_PLIC_STACK_SIZE & ~0x000f ] );
 #endif
-
+#endif
 #if OS_PM_EN
 extern void vPortRestoreActiveTask(void);
 extern int blc_pm_handler(void);

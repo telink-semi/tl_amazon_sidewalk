@@ -202,7 +202,7 @@ void sid_pal_mfg_store_init(sid_pal_mfg_store_region_t mfg_store_region)
 
     /* Read mfg header */
     err = tlv_read_marker(&tlv_flash, (uint8_t *)&header, sizeof(header));
-    if (err || strncmp(header.magic_string, MFG_HEADER_MAGIC, strlen(MFG_HEADER_MAGIC)) != 0) {
+    if (err || strncmp((const char *)header.magic_string, MFG_HEADER_MAGIC, strlen(MFG_HEADER_MAGIC)) != 0) {
         if (err) {
             TL_LOG_E("Failed to read mfg start marker errno %d", err);
         }
@@ -276,11 +276,7 @@ int32_t sid_pal_mfg_store_write(uint16_t value, const uint8_t *buffer, uint16_t 
                           sizeof(struct mfg_header));
     }
 
-#if CONFIG_SIDEWALK_MFG_STORAGE_DIAGNOSTIC
-    return tlv_store(&tlv_flash, value, buffer, length);
-#else
     return (int32_t)SID_ERROR_NOSUPPORT;
-#endif
 }
 
 void sid_pal_mfg_store_read(uint16_t value, uint8_t *buffer, uint16_t length)
@@ -310,42 +306,13 @@ uint16_t sid_pal_mfg_store_get_length_for_value(uint16_t value)
 
 int32_t sid_pal_mfg_store_erase(void)
 {
-#if CONFIG_SIDEWALK_MFG_STORAGE_DIAGNOSTIC
-    const size_t mfg_size = tlv_flash.end - tlv_flash.start;
-    return tlv_flash.io.erase(tlv_flash.io.ctx, tlv_flash.start,
-                        mfg_size);
-#else
     return (int32_t)SID_ERROR_NOSUPPORT;
-#endif /* CONFIG_SIDEWALK_MFG_STORAGE_DIAGNOSTIC */
 }
 
 bool sid_pal_mfg_store_is_empty(void)
 {
-#if CONFIG_SIDEWALK_MFG_STORAGE_DIAGNOSTIC
-    // read header, if failed to read magic, it is empty
-
-    uint8_t empty_flash_mem[FLASH_MEM_CHUNK];
-    uint8_t tmp_buff[FLASH_MEM_CHUNK];
-    size_t length = sizeof(tmp_buff);
-    int rc;
-    const struct flash_parameters *flash_params;
-
-    memset(empty_flash_mem, 0xFF, sizeof(empty_flash_mem));
-    for (off_t offset = tlv_flash.start; offset < tlv_flash.end;
-         offset += length) {
-        if ((offset + length) > tlv_flash.end) {
-            length = tlv_flash.end - offset;
-        }
-        flash_read_page(offset,length,tmp_buff);
-        if (0 != memcmp(empty_flash_mem, tmp_buff, length)) {
-            return false;
-        }
-    }
-    return true;
-#else
     TL_LOG_W("The sid_pal_mfg_store_is_empty function is not enabled.");
     return false;
-#endif /* CONFIG_SIDEWALK_MFG_STORAGE_DIAGNOSTIC */
 }
 
 bool sid_pal_mfg_store_is_tlv_support(void)
@@ -364,8 +331,7 @@ bool sid_pal_mfg_store_dev_id_get(uint8_t dev_id[SID_PAL_MFG_STORE_DEVID_SIZE])
 {
     uint32_t mcu_devid = DEV_ID_REG;
     dev_id[0] = 0xBF;
-    swap32(mcu_devid,mcu_devid);
-    memcpy(&dev_id[1], &mcu_devid, sizeof(mcu_devid));
+    swap32(&dev_id[1],(const u8 *)&mcu_devid);
     return true;
 }
 

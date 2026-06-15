@@ -409,16 +409,16 @@
     #define PD3_INPUT_ENABLE 0
 #endif
 #ifndef PD4_INPUT_ENABLE
-    #define PD4_INPUT_ENABLE 0
+    #define PD4_INPUT_ENABLE 1
 #endif
 #ifndef PD5_INPUT_ENABLE
-    #define PD5_INPUT_ENABLE 0
+    #define PD5_INPUT_ENABLE 1
 #endif
 #ifndef PD6_INPUT_ENABLE
-    #define PD6_INPUT_ENABLE 0
+    #define PD6_INPUT_ENABLE 1
 #endif
 #ifndef PD7_INPUT_ENABLE
-    #define PD7_INPUT_ENABLE 0
+    #define PD7_INPUT_ENABLE 1
 #endif
 #ifndef PD0_OUTPUT_ENABLE
     #define PD0_OUTPUT_ENABLE 0
@@ -481,16 +481,16 @@
     #define PD3_FUNC AS_GPIO
 #endif
 #ifndef PD4_FUNC
-    #define PD4_FUNC AS_GPIO
+    #define PD4_FUNC AS_TDI
 #endif
 #ifndef PD5_FUNC
-    #define PD5_FUNC AS_GPIO
+    #define PD5_FUNC AS_TDO
 #endif
 #ifndef PD6_FUNC
-    #define PD6_FUNC AS_GPIO
+    #define PD6_FUNC AS_TMS
 #endif
 #ifndef PD7_FUNC
-    #define PD7_FUNC AS_GPIO
+    #define PD7_FUNC AS_TCK
 #endif
 #ifndef PULL_WAKEUP_SRC_PD0
     #define PULL_WAKEUP_SRC_PD0 0

@@ -99,16 +99,16 @@ void app_ui_os_timer_init(void)
        btnPressTimer = xTimerCreate("btnPressTimer",                                                 /* Text name. */
                                                              CONV_MS_TO_TICKS(BTN_PRESS_TIME_MS), /* Timer period. */
                                                              false,                                                                           /* Disable auto reload. */
-                                                             1,                                                                   /* ID as tagContext */
+                                                             (void *)1, /* ID as tagContext */
                                                              app_ui_btn_press_timer_handler);
        if(NULL ==btnPressTimer )
            configASSERT(0);
 
-       tlkapi_printf(1,"app_ui_os_timer_init done");
+       tlkapi_printf(APP_BUTTON_LOG_EN,"app_ui_os_timer_init done");
 //       btnLongPressTimer = xTimerCreate("btnLPressTimer",                                                 /* Text name. */
 //                                                             CONV_MS_TO_TICKS(BTN_PRESS_LONG_TIME_MS), /* Timer period. */
 //                                                             true,                                                                           /* Disable auto reload. */
-//                                                             2,                                                                   /* ID as tagContext */
+//                                                             (void *)2,                                                                   /* ID as tagContext */
 //                                                             app_ui_btn_lpress_timer_handler);
 
 }

@@ -814,6 +814,9 @@ _attribute_ram_code_ void user_init_deepRetn(void)
 
     blc_ll_recoverDeepRetention();
 
+    #if !CONFIG_SIDEWALK_SWI_TASK
+    plic_interrupt_enable(IRQ_SOFT);
+    #endif
 
     trng_dig_en();
     hash_dig_en();

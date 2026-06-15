@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2024 Amazon.com, Inc. or its affiliates. All rights reserved.
+ * Copyright 2021-2025 Amazon.com, Inc. or its affiliates. All rights reserved.
  *
  * AMAZON PROPRIETARY/CONFIDENTIAL
  *
@@ -39,7 +39,7 @@ typedef void (*set_sub_ghz_cfg_t)(struct sid_sub_ghz_links_config *sub_ghz_cfg);
 struct sid_qa_callbacks {
     reboot_func_t reboot_cmd;
     set_sub_ghz_cfg_t set_sub_ghz_cfg;
-    struct sid_device_info *device_info_cfg;
+    struct sid_device_info_config *device_info_cfg;
 };
 
 struct sid_qa_pwr_meas_if {

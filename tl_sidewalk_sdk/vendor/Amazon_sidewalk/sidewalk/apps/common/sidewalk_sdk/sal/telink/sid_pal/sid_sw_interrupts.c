@@ -26,7 +26,8 @@
 #include "stack/ble/ble.h"
 #include "sid_ble_adapter.h"
 #include <sid_pal_swi_ifc.h>
-#if (FREERTOS_ENABLE)
+
+#if (FREERTOS_ENABLE )
     #include "tlk_riscv.h"
     #include <FreeRTOS.h>
     #include <task.h>
@@ -36,6 +37,9 @@
     #include <event_groups.h>
     #include "app_freertos.h"
 
+#endif
+
+#if CONFIG_SIDEWALK_SWI_TASK
 
 #ifndef CONFIG_SIDEWALK_SWI_PRIORITY
 #error "CONFIG_SIDEWALK_SWI_PRIORITY must be defined"
@@ -133,6 +137,76 @@ sid_error_t sid_pal_swi_trigger(void)
     }
     return SID_ERROR_NONE;
 }
+
+#else
+
+#if 1
+_attribute_ble_data_retention_ static sid_pal_swi_cb_t   swi_cb   = NULL;
+_attribute_ble_data_retention_ static bool               is_init  = false;
+
+
+_attribute_ram_code_ void soft_irq_handler(void)
+{
+    if (swi_cb) {
+        swi_cb();
+    }
+}
+
+#if (FREERTOS_ENABLE)
+PLIC_ISR_REGISTER_OS(soft_irq_handler,IRQ_SOFT);
+#else
+PLIC_ISR_REGISTER(soft_irq_handler,IRQ_SOFT);
+#endif
+
+/*-----------------------------------------------------------*/
+sid_error_t sid_pal_swi_init(void)
+{
+    if (is_init) {
+        return SID_ERROR_NONE;
+    }
+    is_init = true;
+    plic_set_priority(IRQ_SOFT, 1);
+    plic_interrupt_enable(IRQ_SOFT);
+    TL_LOG_D("sid_pal_swi_init done");
+    return SID_ERROR_NONE;
+}
+
+sid_error_t sid_pal_swi_deinit(void)
+{
+    if (!is_init) {
+        return SID_ERROR_NONE;
+    }
+    sid_pal_swi_stop();
+    plic_interrupt_disable(IRQ_SOFT);
+    is_init = false;
+    return SID_ERROR_NONE;
+}
+
+sid_error_t sid_pal_swi_start(sid_pal_swi_cb_t event_callback)
+{
+    if (!event_callback) {
+        return SID_ERROR_NULL_POINTER;
+    }
+    swi_cb = event_callback;
+    return SID_ERROR_NONE;
+}
+
+sid_error_t sid_pal_swi_stop(void)
+{
+    swi_cb = NULL;
+    return SID_ERROR_NONE;
+}
+
+sid_error_t sid_pal_swi_trigger(void)
+{
+    if (!(is_init )) {
+        return SID_ERROR_INVALID_STATE;
+    }
+    plic_set_pending(IRQ_SOFT);
+    return SID_ERROR_NONE;
+}
+
+
 #else
 
 _attribute_ble_data_retention_ static sid_pal_swi_cb_t   swi_cb   = NULL;
@@ -150,7 +224,7 @@ _attribute_ram_code_ void mswi_irq_handler(void)
     }
 }
 
-_attribute_ram_code_noinline_ __attribute__((interrupt("machine"), aligned(4))) void trap_entry(void)
+_attribute_ram_code_sec_noinline_ __attribute__((interrupt("machine"), aligned(4))) void trap_entry(void)
 {
     long mcause   = read_csr(NDS_MCAUSE);
     long mepc     = 0;
@@ -256,5 +330,5 @@ sid_error_t sid_pal_swi_trigger(void)
     plic_sw_set_pending(); /* trigger swi */
     return SID_ERROR_NONE;
 }
-
+#endif
 #endif

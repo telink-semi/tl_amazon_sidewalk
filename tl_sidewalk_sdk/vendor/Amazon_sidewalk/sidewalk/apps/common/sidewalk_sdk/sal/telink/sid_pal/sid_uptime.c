@@ -39,6 +39,7 @@
     #include "app_freertos.h"
 #endif
 #include <sid_pal_uptime_ifc.h>
+#include <sid_pal_critical_region_ifc.h>
 
 #define TIMER_RTC_MAX_PPM_TO_COMPENSATE 200
 

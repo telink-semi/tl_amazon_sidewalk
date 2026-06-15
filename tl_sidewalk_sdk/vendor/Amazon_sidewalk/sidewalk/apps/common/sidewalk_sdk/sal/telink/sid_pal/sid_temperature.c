@@ -30,7 +30,7 @@
 #include <stdint.h>
 
 
-static const struct device *temp_dev;
+//static const struct device *temp_dev;
 
 sid_error_t sid_pal_temperature_init(void)
 {

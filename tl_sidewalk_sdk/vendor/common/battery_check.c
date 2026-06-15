@@ -79,9 +79,9 @@ _attribute_ram_code_ void adc_bat_detect_init(void)
     g_adc_vref = g_adc_gpio_calib_vref; //set gpio sample calib vref
         #if VBAT_CHANNEL_EN             //vbat mode, vbat channel
     g_adc_vref_offset = 0;              //Vbat has no two-point calibration, offset must be set to 0.
-#else
+        #else
     g_adc_vref_offset = g_adc_gpio_calib_vref_offset; //set adc_vref_offset as adc_gpio_calib_vref_offset
-#endif
+        #endif
     /******power off sar adc********/
     adc_power_off();
 

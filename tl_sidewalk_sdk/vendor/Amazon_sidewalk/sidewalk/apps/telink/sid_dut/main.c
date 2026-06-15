@@ -71,13 +71,6 @@ PLIC_ISR_REGISTER_OS(stimer_irq_handler, IRQ_SYSTIMER)
 PLIC_ISR_REGISTER(stimer_irq_handler, IRQ_SYSTIMER)
 #endif
 void gpio_irq1_handler(void);
-volatile unsigned int gpio_irq0_cnt = 0;
-_attribute_ram_code_sec_ void gpio_irq0_handler(void)
-{
-    gpio_irq0_cnt++;
-    sid_pal_radio_irq_process();
-    gpio_clr_irq_status(GPIO_IRQ_IRQ0);
-}
 #if (FREERTOS_ENABLE)
 PLIC_ISR_REGISTER_OS(gpio_irq1_handler, IRQ_GPIO_IRQ0);
 #else
@@ -140,7 +133,7 @@ __INLINE void blc_app_system_init(void)
 #endif
 }
 void app_start(void);
-int app_sidewalk_init(void);
+
 /**
  * @brief       This is main function
  * @param[in]   none
@@ -169,6 +162,26 @@ _attribute_ram_code_ int main(void)
 
     gpio_init(!deepRetWakeUp);
 
+     void app_uart_init(void);
+     app_uart_init();
+
+     HAOJIE_DBG_CHN0_HIGH;
+     HAOJIE_DBG_CHN0_LOW;
+     HAOJIE_DBG_CHN1_HIGH;
+     HAOJIE_DBG_CHN1_LOW;
+     HAOJIE_DBG_CHN2_HIGH;
+     HAOJIE_DBG_CHN2_LOW;
+     HAOJIE_DBG_CHN3_HIGH;
+     HAOJIE_DBG_CHN3_LOW;
+     HAOJIE_DBG_CHN4_HIGH;
+     HAOJIE_DBG_CHN4_LOW;
+     HAOJIE_DBG_CHN5_HIGH;
+     HAOJIE_DBG_CHN5_LOW;
+     HAOJIE_DBG_CHN6_HIGH;
+     HAOJIE_DBG_CHN6_LOW;
+     HAOJIE_DBG_CHN7_HIGH;
+     HAOJIE_DBG_CHN7_LOW;
+
     #if defined(TLK_ONLY_BLE_HOST)
     if (deepRetWakeUp) {
         sys_n22_init(N22_IRAM_STARTUP_ADDR);
@@ -192,8 +205,7 @@ _attribute_ram_code_ int main(void)
             sid_pal_radio_reinit();
         }
 
-        void app_uart_init(void);
-        app_uart_init();
+
 
     } else { //MCU power_on or wake_up from deepSleep mode
         user_init_normal();
@@ -205,7 +217,7 @@ _attribute_ram_code_ int main(void)
 #endif
     }
     #if ((!JTAG_DEBUG_DISABLE) || TLKAPI_RTT_PRINT)
-    jtag_set_pin_en();
+    //jtag_set_pin_en();
     #endif
     #if TLKAPI_RTT_PRINT
     SEGGER_RTT_ConfigUpBuffer(0, NULL, NULL, 0, SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL);

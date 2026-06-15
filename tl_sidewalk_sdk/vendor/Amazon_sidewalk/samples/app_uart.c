@@ -33,13 +33,10 @@
 #include "app.h"
 #include "app_uart.h"
 
-#if config_HW_SELECT
-#define UART0_TX_PIN GPIO_FC_PE4
-#define UART0_RX_PIN GPIO_FC_PE5
-#else
+
 #define UART0_TX_PIN GPIO_FC_PA1
 #define UART0_RX_PIN GPIO_FC_PA2
-#endif
+
 #define APP_UART_BAUDRATE        1000000
 #define UART_MODULE_SEL         UART0
 
@@ -98,6 +95,7 @@ int    fflush (FILE *) {
         tlkapi_debug_handler();
     }
 #endif
+    return 0;
 }
 
 void app_uart_init(void)

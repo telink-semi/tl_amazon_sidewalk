@@ -205,8 +205,8 @@
  * @brief The address of the register holding the CRC configuration extracted from a received LoRa header
  */
 #define SX126X_REG_LR_HEADER_CRC 0x076B
-#define SX126X_REG_LR_HEADER_CRC_POS ( 4U )
-#define SX126X_REG_LR_HEADER_CRC_MASK ( 0x01UL << SX126X_REG_LR_HEADER_CRC_POS )
+#define SX126X_REG_LR_HEADER_CRC_POS (4U)
+#define SX126X_REG_LR_HEADER_CRC_MASK (0x01UL << SX126X_REG_LR_HEADER_CRC_POS)
 
 /*
  * -----------------------------------------------------------------------------

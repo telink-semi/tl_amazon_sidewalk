@@ -26,12 +26,13 @@
 #include "sid_ble_adapter.h"
 #include "stack/ble/ble.h"
 
-#include <sid_app_sbdt_demo.h>
+
 #include <sid_sdk_version.h>
 
 #include <FreeRTOS.h>
 #include <queue.h>
 #include <task.h>
+
 #include <sid_sdk_config.h>
 #include <app.h>
 //#include <sidewalk.h>
@@ -39,8 +40,6 @@
 #ifdef CONFIG_SIDEWALK_SUBGHZ_SUPPORT
 #include <app_subGHz_config.h>
 #endif
-#include <sid_hal_reset_ifc.h>
-//#include <sid_hal_memory_ifc.h>
 #include <stdbool.h>
 #include <bt_app_callbacks.h>
 #include <sid_api.h>
@@ -54,6 +53,7 @@
 
 #include "sid_demo_parser.h"
 #include "sid_demo_types.h"
+#include <sid_app_sbdt_demo.h>
 
 #define KEY1  0x01
 #define KEY2  0x02
@@ -62,7 +62,7 @@
 
 #define PARAM_UNUSED (0U)
 
-#define MAIN_TASK_STACK_SIZE        (4096 / sizeof(configSTACK_DEPTH_TYPE))
+#define MAIN_TASK_STACK_SIZE        1536
 
 #define APP_MAX_WRITE_SIZE 256     //shoubld be 16* ,max 240
 
@@ -70,7 +70,6 @@
 int blt_all_in_one_otaWrite(int offset,void *p,int len);
 int blt_all_in_one_ota_finish(void);
 int blt_ota_crc_check_whole(int size);
-void blt_ota_writeBootMark(void);
 void app_sbdt_transfer_init(struct sid_handle *handle);
 
 _attribute_ble_data_retention_  static app_context_t g_stru_app_context ;
@@ -391,9 +390,11 @@ int app_start(void)
 #if BLE_APP_PM_ENABLE
 extern void app_sid_subg_sleep_enter(u8 e, u8 *p, int n);
 extern void app_sid_subg_wakeup(u8 e, u8 *p, int n);
-extern void proc_keyboard(u8 e, u8 *p, int n);
+#if (FREERTOS_ENABLE)
 extern void proc_keyboardSupend (u8 e, u8 *p, int n);
-
+#else
+extern void proc_keyboard(u8 e, u8 *p, int n);
+#endif
 
 _attribute_ram_code_ void app_sid_sleep_enter(u8 e, u8 *p, int n)
 {

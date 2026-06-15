@@ -97,6 +97,19 @@
  */
 #if (UI_BUTTON_ENABLE)
 
+    #if (config_HW_SELECT == HW_BOARD_2_2)
+
+    #define SW1_GPIO                  GPIO_PC0
+    #define PC0_INPUT_ENABLE 1
+    #define PC0_FUNC AS_GPIO
+    #define PULL_WAKEUP_SRC_PC0 PM_PIN_PULLUP_10K
+
+    #define SW2_GPIO                  GPIO_PD2
+    #define PD2_INPUT_ENABLE 1
+    #define PD2_FUNC AS_GPIO
+    #define PULL_WAKEUP_SRC_PD2 PM_PIN_PULLUP_10K
+
+    #else
     #if JTAG_DEBUG_DISABLE
     #define SW1_GPIO                  GPIO_PD5
     #define PD5_INPUT_ENABLE 1
@@ -115,6 +128,7 @@
     #define PD2_FUNC AS_GPIO
 
     #define PULL_WAKEUP_SRC_PD2 PM_PIN_PULLUP_10K
+    #endif
 
 #endif
 
@@ -125,27 +139,21 @@
     /**
      *  @brief  Definition gpio for led
      */
-#if config_HW_SELECT
-    #define GPIO_LED_BLUE     GPIO_PB3
+#if (config_HW_SELECT == HW_BOARD_2_2)
+
     #define GPIO_LED_GREEN    GPIO_PC1
-    #define GPIO_LED_WHITE    GPIO_PC0
-    #define GPIO_LED_RED      GPIO_PB2
-//
+    #define GPIO_LED_WHITE    GPIO_PB7
 
-    #define PB3_FUNC          AS_GPIO
+    #define PB7_FUNC          AS_GPIO
     #define PC1_FUNC          AS_GPIO
-    #define PC0_FUNC          AS_GPIO
-    #define PB2_FUNC          AS_GPIO
 
-
-    #define PB3_OUTPUT_ENABLE 1
+    #define PB7_OUTPUT_ENABLE 1
     #define PC1_OUTPUT_ENABLE 1
-    #define PC0_OUTPUT_ENABLE 1
-    #define PB2_OUTPUT_ENABLE 1
+
 #else
-    #define GPIO_LED_BLUE     GPIO_PA4
-    #define GPIO_LED_RED      GPIO_PE2
-//
+    #define GPIO_LED_GREEN      GPIO_PA4
+    #define GPIO_LED_WHITE      GPIO_PE2
+
     #define PA4_FUNC          AS_GPIO
     #define PE2_FUNC          AS_GPIO
 
@@ -221,7 +229,7 @@
 
 #endif //end of DEBUG_GPIO_ENABLE
 
-#if config_HW_SELECT
+#ifndef TLKAPI_DEBUG_GPIO_PIN
 #define TLKAPI_DEBUG_GPIO_PIN GPIO_PA0
 #endif
 #endif /* VENDOR_COMMON_BOARDS_TL323X_C1T88A20_H_ */

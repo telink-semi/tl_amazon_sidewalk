@@ -121,7 +121,7 @@ _attribute_ram_code_ static sid_error_t telink_spi_xfer(const struct sid_pal_ser
 }
 
 /* ========== xfer_hd is a half-duplex system (write-then-read / write-only / read-only) ========== */
-_attribute_ram_code_ static sid_error_t telink_spi_xfer_hd(const struct sid_pal_serial_bus_iface *iface,
+static sid_error_t telink_spi_xfer_hd(const struct sid_pal_serial_bus_iface *iface,
                                       const struct sid_pal_serial_bus_client *client,
                                       uint8_t *tx, uint8_t *rx,
                                       size_t tx_size, size_t rx_size)

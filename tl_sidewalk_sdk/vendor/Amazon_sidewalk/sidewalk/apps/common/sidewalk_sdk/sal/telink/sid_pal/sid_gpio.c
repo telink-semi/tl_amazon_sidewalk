@@ -29,20 +29,19 @@
 #include "stack/ble/ble.h"
 #include "sid_ble_adapter.h"
 #include <sid_pal_gpio_ifc.h>
-
-
-#include <sid_pal_gpio_ifc.h>
 #include <sid_pal_assert_ifc.h>
 #include "lk/list.h"
 #include "app_mem.h"
 
-#if config_HW_SELECT
-#define P0_PIN_NUM GPIO_PE2
-#define P1_PIN_NUM GPIO_PE1
-#else
-#define P0_PIN_NUM GPIO_PD3
-#define P1_PIN_NUM GPIO_PA4
+#if (FREERTOS_ENABLE)
+#include "tlk_riscv.h"
+#include <FreeRTOS.h>
 #endif
+
+
+#define P0_PIN_NUM RADIO_DIO_1
+#define P1_PIN_NUM GPIO_PA4
+
 u32 gpio_tbl[] = {P0_PIN_NUM, P1_PIN_NUM};
 gpio_irq_num_e gpio_irq_tbl[] = {GPIO_IRQ0, GPIO_IRQ2};
 gpio_irq_e gpio_irq_mask_tbl[] = {GPIO_IRQ_IRQ0, GPIO_IRQ_IRQ2};
@@ -370,7 +369,7 @@ sid_error_t sid_pal_gpio_set_irq(uint32_t gpio_number, sid_pal_gpio_irq_trigger_
     if (irq_trigger != SID_PAL_GPIO_IRQ_TRIGGER_NONE) {
         create_irq_context(gpio_number, gpio_callback, callback_arg);
 
-        uint8_t irq_no = get_irq_no(gpio_number);
+        irq_no = get_irq_no(gpio_number);
         if(GPIO_INVALID_IRQ_NO == irq_no)
         {
             return SID_ERROR_PARAM_OUT_OF_RANGE;

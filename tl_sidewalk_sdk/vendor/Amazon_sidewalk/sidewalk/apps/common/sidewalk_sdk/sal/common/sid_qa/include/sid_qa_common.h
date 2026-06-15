@@ -1,5 +1,5 @@
 /*
- * Copyright 2023-2025 Amazon.com, Inc. or its affiliates.  All rights reserved.
+ * Copyright 2023-2026 Amazon.com, Inc. or its affiliates.  All rights reserved.
  *
  * AMAZON PROPRIETARY/CONFIDENTIAL
  *
@@ -79,6 +79,9 @@ struct app_context {
     enum app_state state;
     uint8_t counter;
     struct sid_event_callbacks *extra_callbacks;
+    uint8_t env;
+    uint8_t battery_level;
+    uint32_t ota_block_size;
 };
 
 struct cli_config {
@@ -88,7 +91,7 @@ struct cli_config {
     uint32_t rsp_msg_id;
     reboot_func_t reboot_cmd;
     set_sub_ghz_cfg_t set_sub_ghz_cfg;
-    struct sid_device_info *device_info_cfg;
+    struct sid_device_info_config *device_info_cfg;
 };
 
 enum pwr_meas_type {
