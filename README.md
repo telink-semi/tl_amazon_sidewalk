@@ -76,7 +76,7 @@ tl_amazon_sidewalk/
 
 | Component | Version |
 |-----------|---------|
-| Sidewalk SDK | V1.0.0.7 (PR) |
+| Sidewalk SDK | V1.0.0.8 (PR) |
 | Chip | TL3238E1 A0 |
 | EVK | C1T388A20_V1.1 |
 | Platform SDK | V3.11.2 |
