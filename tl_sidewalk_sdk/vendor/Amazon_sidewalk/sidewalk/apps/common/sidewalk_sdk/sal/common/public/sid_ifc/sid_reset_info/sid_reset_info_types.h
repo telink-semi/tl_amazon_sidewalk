@@ -41,7 +41,7 @@ struct sid_reset_info {
     /** The PC where reset occured */
     uint32_t program_counter;
 
-    /** The link register value	*/
+    /** The link register value    */
     uint32_t link_register;
 
     /** System uptime in seconds */

@@ -83,7 +83,7 @@ _attribute_ram_code_ void gpio_irq_kb_handler(void)
     plic_interrupt_disable(IRQ_GPIO_IRQ1);
     gpio_clr_irq_mask(IRQ_GPIO_IRQ1);
     if(hButtonTask != NULL)
-    	xTaskResumeFromISR(hButtonTask);
+        xTaskResumeFromISR(hButtonTask);
     DBG_CHN6_HIGH;
     DBG_CHN6_LOW;
 }

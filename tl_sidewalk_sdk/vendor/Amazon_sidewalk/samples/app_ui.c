@@ -581,12 +581,12 @@ void button_init(void)
     gpio_set_irq(GPIO_IRQ1, SW1_GPIO, INTR_FALLING_EDGE);
     gpio_set_irq(GPIO_IRQ1, SW2_GPIO, INTR_FALLING_EDGE);
 
-	#if (config_HW_SELECT == HW_BOARD_2_2)
-	gpio_set_up_down_res(SW3_GPIO, GPIO_PIN_PULLUP_10K);
-	gpio_set_up_down_res(SW4_GPIO, GPIO_PIN_PULLUP_10K);
-	gpio_set_irq(GPIO_IRQ1, SW3_GPIO, INTR_FALLING_EDGE);
-	gpio_set_irq(GPIO_IRQ1, SW4_GPIO, INTR_FALLING_EDGE);
-	#endif
+    #if (config_HW_SELECT == HW_BOARD_2_2)
+    gpio_set_up_down_res(SW3_GPIO, GPIO_PIN_PULLUP_10K);
+    gpio_set_up_down_res(SW4_GPIO, GPIO_PIN_PULLUP_10K);
+    gpio_set_irq(GPIO_IRQ1, SW3_GPIO, INTR_FALLING_EDGE);
+    gpio_set_irq(GPIO_IRQ1, SW4_GPIO, INTR_FALLING_EDGE);
+    #endif
 
     #if (BLE_APP_PM_ENABLE)
     pm_set_gpio_wakeup(SW1_GPIO,WAKEUP_LEVEL_LOW, 1);
