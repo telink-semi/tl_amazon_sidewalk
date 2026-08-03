@@ -25,9 +25,13 @@
 #include "drivers.h"
 #include "sid_ble_adapter.h"
 #include "stack/ble/ble.h"
+#if (FREERTOS_ENABLE)
 #include <FreeRTOS.h>
 #include <queue.h>
 #include <task.h>
+#else
+#include <sid_pal_critical_region_ifc.h>
+#endif
 #include <sid_sdk_config.h>
 #include <app.h>
 //#include <sidewalk.h>
@@ -56,6 +60,9 @@
 #define MAIN_TASK_STACK_SIZE       1536
 #define MSG_QUEUE_LEN 10
 #define MSG_LOG_BLOCK_SIZE 80
+#if (!FREERTOS_ENABLE)
+#define APP_EVENTS_PER_SCHEDULE 4
+#endif
 
 enum event_type
 {
@@ -89,10 +96,24 @@ struct link_status
     uint32_t supported_link_mode[SID_LINK_TYPE_MAX_IDX];
 };
 
+#if (!FREERTOS_ENABLE)
+typedef struct app_event_queue {
+    enum event_type buffer[MSG_QUEUE_LEN];
+    volatile uint8_t head;
+    volatile uint8_t tail;
+    volatile uint8_t count;
+    volatile uint32_t dropped;
+} app_event_queue_t;
+#endif
+
 typedef struct app_context
 {
+#if (FREERTOS_ENABLE)
     TaskHandle_t main_task;
     QueueHandle_t event_queue;
+#else
+    app_event_queue_t *event_queue;
+#endif
     struct sid_handle *sidewalk_handle;
     enum app_state state;
     struct link_status link_status;
@@ -100,8 +121,20 @@ typedef struct app_context
     bool connection_request;
 } app_context_t;
 
-/* Global mainly because bsp_evt_handler does not have a context pointer */
+/* Global mainly because button callbacks do not have a context pointer */
+#if (FREERTOS_ENABLE)
 static QueueHandle_t g_event_queue;
+#else
+static app_event_queue_t g_event_queue_buf;
+static app_event_queue_t *g_event_queue;
+static app_context_t g_app_context;
+static struct sid_event_callbacks g_event_callbacks;
+static struct sid_config g_sid_config;
+static struct sid_end_device_characteristics dev_ch;
+#ifdef CONFIG_SIDEWALK_SUBGHZ_SUPPORT
+static sid_pal_radio_rx_packet_t g_rx;
+#endif
+#endif
 
 extern char _end[];
 extern uint32_t _STACK_TOP;
@@ -148,8 +181,66 @@ void app_evt_state_ind(enum evt_ind ind ,uint8_t flag )
     #endif
 }
 
-static void queue_event(QueueHandle_t queue, enum event_type event, bool in_isr)
+#if (!FREERTOS_ENABLE)
+static void app_event_queue_init(app_event_queue_t *queue)
 {
+    queue->head = 0;
+    queue->tail = 0;
+    queue->count = 0;
+    queue->dropped = 0;
+}
+
+static bool app_event_queue_push(app_event_queue_t *queue, enum event_type event)
+{
+    bool ok = false;
+    sid_pal_enter_critical_region();
+    if (queue->count < MSG_QUEUE_LEN) {
+        queue->buffer[queue->head] = event;
+        queue->head = (uint8_t)((queue->head + 1) % MSG_QUEUE_LEN);
+        queue->count++;
+        ok = true;
+    } else {
+        queue->dropped++;
+    }
+    sid_pal_exit_critical_region();
+    return ok;
+}
+
+static bool app_event_queue_pop(app_event_queue_t *queue, enum event_type *event)
+{
+    bool ok = false;
+    sid_pal_enter_critical_region();
+    if (queue->count > 0) {
+        *event = queue->buffer[queue->tail];
+        queue->tail = (uint8_t)((queue->tail + 1) % MSG_QUEUE_LEN);
+        queue->count--;
+        ok = true;
+    }
+    sid_pal_exit_critical_region();
+    return ok;
+}
+
+static uint8_t app_event_queue_empty(app_event_queue_t *queue)
+{
+    return queue->count == 0;
+}
+
+uint8_t g_app_event_queue_empty(void)
+{
+    return app_event_queue_empty(g_app_context.event_queue);
+}
+
+#endif
+
+static void queue_event(
+#if (FREERTOS_ENABLE)
+                        QueueHandle_t queue,
+#else
+                        app_event_queue_t *queue,
+#endif
+                        enum event_type event, bool in_isr)
+{
+#if (FREERTOS_ENABLE)
     if (in_isr) {
         BaseType_t task_woken = pdFALSE;
         xQueueSendFromISR(queue, &event, &task_woken);
@@ -158,6 +249,12 @@ static void queue_event(QueueHandle_t queue, enum event_type event, bool in_isr)
     else {
         xQueueSend(queue, &event, 0);
     }
+#else
+    ARG_UNUSED(in_isr);
+    if (queue != NULL) {
+        app_event_queue_push(queue, event);
+    }
+#endif
 }
 
 static void on_sidewalk_event(bool in_isr, void *context)
@@ -170,7 +267,7 @@ static void on_sidewalk_msg_received(const struct sid_msg_desc *msg_desc, const 
 {
     ARG_UNUSED(context);
     static uint8_t data_flag = 1;
-    TL_LOG_I("received message(type: %d, link_mode: %d, id: %u size %u %s)", (int)msg_desc->type,
+    TL_LOG_I("received message(link_type: %d, type: %d, link_mode: %d, id: %u size %u %s)", (int)msg_desc->link_type, (int)msg_desc->type,
                              (int)msg_desc->link_mode, msg_desc->id, msg->size,msg->data);
 
     tlkapi_send_string_data(1, "sidewalk msg received ", msg->data, msg->size);
@@ -373,7 +470,7 @@ static int32_t init_and_start_link(app_context_t *context, struct sid_config *co
             goto error;
         }
 #if CONFIG_SID_END_DEVICE_AUTO_CONN_REQ
-
+if (link_mask == SID_LINK_TYPE_1) {
         enum sid_link_connection_policy set_policy = SID_LINK_CONNECTION_POLICY_AUTO_CONNECT;
 
         ret = sid_option(sid_handle, SID_OPTION_SET_LINK_CONNECTION_POLICY, &set_policy,
@@ -393,6 +490,20 @@ static int32_t init_and_start_link(app_context_t *context, struct sid_config *co
                    &ac_params, sizeof(ac_params));
         if (ret) {
             TL_LOG_E("sid option multi link policy err %d", (int)ret);
+        }
+}else {
+            enum sid_link_connection_policy set_policy =
+                SID_LINK_CONNECTION_POLICY_NONE;
+
+            ret = sid_option(sid_handle,
+                             SID_OPTION_SET_LINK_CONNECTION_POLICY,
+                             &set_policy,
+                             sizeof(set_policy));
+            if (ret) {
+                TL_LOG_E("sid option set connection policy none err %d", (int)ret);
+            }
+
+            TL_LOG_I("SubGHz single link mode: disable ACM, link_mask=0x%x", link_mask);
         }
 
 #endif
@@ -415,6 +526,7 @@ void app_radio_dio_irq_handler(void)
     return;
 }
 
+#if (FREERTOS_ENABLE)
 static void main_thread(void *context)
 {
     app_context_t *app_context = (app_context_t *)context;
@@ -461,7 +573,6 @@ static void main_thread(void *context)
     while (1) {
         enum event_type event;
         if (xQueueReceive(app_context->event_queue, &event, portMAX_DELAY) == pdTRUE) {
-            TL_LOG_D("sid event %d", event);
             switch (event) {
                 case EVENT_TYPE_SIDEWALK:
                     sid_process(app_context->sidewalk_handle );
@@ -526,7 +637,7 @@ static void main_thread(void *context)
 
 error:
     if (app_context->sidewalk_handle  != NULL) {
-        sid_stop(app_context->sidewalk_handle , SID_LINK_TYPE_1);
+        sid_stop(app_context->sidewalk_handle , config.link_mask);
         sid_deinit(app_context->sidewalk_handle );
         app_context->sidewalk_handle = NULL;
     }
@@ -534,7 +645,7 @@ error:
     sys_reboot();
     vTaskDelete(NULL);
 }
-
+#endif /* FREERTOS_ENABLE */
 
 
 void Portble_btn_press(u8 key)
@@ -569,6 +680,7 @@ void Portble_btn_l_press(u8 key)
 }
 
 
+#if (FREERTOS_ENABLE)
 int app_start(void)
 {
     #if BLE_APP_PM_ENABLE
@@ -595,8 +707,10 @@ int app_start(void)
     }
 
     static app_context_t app_context = {
-        .event_queue = NULL,
+#if (FREERTOS_ENABLE)
         .main_task = NULL,
+#endif
+        .event_queue = NULL,
         .sidewalk_handle = NULL,
         .state = STATE_INIT,
     };
@@ -609,6 +723,171 @@ int app_start(void)
     }
     return 0;
 }
+
+#else /* !FREERTOS_ENABLE */
+
+static void app_prepare_config(app_context_t *app_context)
+{
+    dev_ch = (struct sid_end_device_characteristics){
+        .type = SID_END_DEVICE_TYPE_STATIC,
+        .power_type = SID_END_DEVICE_POWERED_BY_BATTERY_AND_LINE_POWER,
+        .qualification_id = 0x0005,
+    };
+
+    g_event_callbacks = (struct sid_event_callbacks) {
+        .context = app_context,
+        .on_event = on_sidewalk_event,
+        .on_msg_received = on_sidewalk_msg_received,
+        .on_msg_sent = on_sidewalk_msg_sent,
+        .on_send_error = on_sidewalk_send_error,
+        .on_status_changed = on_sidewalk_status_changed,
+        .on_factory_reset = on_sidewalk_factory_reset,
+    };
+
+    g_sid_config = (struct sid_config) {
+        .link_mask = 0,
+        .dev_ch = dev_ch,
+        .callbacks = &g_event_callbacks,
+        .link_config = app_get_ble_config(),
+#ifdef CONFIG_SIDEWALK_SUBGHZ_SUPPORT
+        .sub_ghz_link_config = app_get_sub_ghz_config(),
+#endif
+    };
+}
+
+static int app_process_event(enum event_type event)
+{
+    switch (event) {
+        case EVENT_TYPE_SIDEWALK:
+            sid_process(g_app_context.sidewalk_handle);
+            break;
+        case EVENT_TYPE_SEND_HELLO:
+            send_ping(&g_app_context);
+            break;
+        case EVENT_FACTORY_RESET:
+            factory_reset(&g_app_context);
+            break;
+        case EVENT_TYPE_CONNECTION_REQUEST:
+            toggle_connection_request(&g_app_context);
+            break;
+#ifdef CONFIG_SIDEWALK_SUBGHZ_SUPPORT
+        case EVENT_TYPE_FSK_CSS_SWITCH:
+            if (g_sid_config.link_mask == SID_LINK_TYPE_1 || g_sid_config.link_mask == SID_LINK_TYPE_2) {
+                if (init_and_start_link(&g_app_context, &g_sid_config, SID_LINK_TYPE_3) != 0) {
+                    return -1;
+                }
+                TL_LOG_I("app: Switching to CSS...");
+            } else if (g_sid_config.link_mask == SID_LINK_TYPE_3) {
+                if (init_and_start_link(&g_app_context, &g_sid_config, SID_LINK_TYPE_2) != 0) {
+                    return -1;
+                }
+                TL_LOG_I("app: Switching to FSK...");
+            } else {
+                TL_LOG_W("app: FSK/CSS switch can not be performed");
+            }
+            break;
+
+        case EVENT_TYPE_SET_DEVICE_PROFILE: {
+            struct sid_device_profile set_dp_cfg = {};
+            struct sid_device_profile dev_cfg = {};
+            if (g_sid_config.link_mask != SID_LINK_TYPE_3) {
+                if (init_and_start_link(&g_app_context, &g_sid_config, SID_LINK_TYPE_3) != 0) {
+                    return -1;
+                }
+            }
+            dev_cfg.unicast_params.device_profile_id = SID_LINK3_PROFILE_B;
+            sid_option(g_app_context.sidewalk_handle, SID_OPTION_900MHZ_GET_DEVICE_PROFILE, &dev_cfg, sizeof(dev_cfg));
+            set_dp_cfg = dev_cfg;
+            if (dev_cfg.unicast_params.device_profile_id == SID_LINK3_PROFILE_A) {
+                set_dp_cfg.unicast_params.device_profile_id = SID_LINK3_PROFILE_B;
+                set_dp_cfg.unicast_params.rx_window_count = SID_RX_WINDOW_CNT_INFINITE;
+                set_dp_cfg.unicast_params.unicast_window_interval.async_rx_interval_ms = SID_LINK3_RX_WINDOW_SEPARATION_3;
+            } else if (dev_cfg.unicast_params.device_profile_id == SID_LINK3_PROFILE_B) {
+                set_dp_cfg.unicast_params.device_profile_id = SID_LINK3_PROFILE_A;
+                set_dp_cfg.unicast_params.rx_window_count = SID_RX_WINDOW_CNT_2;
+            }
+            TL_LOG_I("changing from profile : %d -> %d, rx_interval %d",
+                     dev_cfg.unicast_params.device_profile_id,
+                     set_dp_cfg.unicast_params.device_profile_id,
+                     set_dp_cfg.unicast_params.unicast_window_interval.async_rx_interval_ms);
+            set_device_profile(&g_app_context, &set_dp_cfg);
+            break;
+        }
+#endif
+        default:
+            break;
+    }
+    return 0;
+}
+
+int app_sidewalk_init(void)
+{
+#if BLE_APP_PM_ENABLE
+    app_sleep_config();
+#endif
+    platform_parameters_t platform_parameters = {
+            .mfg_store_region.addr_start = sid_mfg_get_start_addr(),
+            .mfg_store_region.addr_end = sid_mfg_get_end_addr(),
+#ifdef CONFIG_SIDEWALK_SUBGHZ_SUPPORT
+            .platform_init_parameters.radio_cfg = (radio_sx126x_device_config_t*)get_radio_cfg(),
+#endif
+    };
+
+    sid_error_t ret_code = sid_platform_init(&platform_parameters);
+    if (ret_code != SID_ERROR_NONE) {
+        TL_LOG_E("Sidewalk Platform Init err: %d", ret_code);
+        return -1;
+    }
+    TL_LOG_I("Sidewalk Platform Init done");
+
+    app_event_queue_init(&g_event_queue_buf);
+    g_event_queue = &g_event_queue_buf;
+
+    g_app_context = (app_context_t) {
+        .event_queue = g_event_queue,
+        .sidewalk_handle = NULL,
+        .state = STATE_INIT,
+    };
+    app_prepare_config(&g_app_context);
+
+    uint32_t ret = init_and_start_link(&g_app_context, &g_sid_config, SID_LINK_TYPE_1);
+
+    if (ret != 0) {
+        TL_LOG_E("init_and_start_link err: %d", ret);
+        return -1;
+    }
+#ifdef CONFIG_SIDEWALK_SUBGHZ_SUPPORT
+    sid_pal_radio_init(app_radio_event_notify, app_radio_dio_irq_handler, &g_rx);
+    if (0 != sid_pal_radio_sleep(UINT32_MAX)) {
+        TL_LOG_E("sid_pal_radio_sleep fail");
+    }
+#endif
+    g_app_context.state = STATE_SIDEWALK_NOT_READY;
+    g_app_context.connection_request = false;
+    return 0;
+}
+
+void app_sidewalk_sch(void)
+{
+    enum event_type event;
+    uint8_t processed = 0;
+    
+    while (processed < APP_EVENTS_PER_SCHEDULE && app_event_queue_pop(g_event_queue, &event)) {
+        //TL_LOG_I("sid event %d", event);
+        if (app_process_event(event) != 0) {
+            TL_LOG_E("sid event err");
+            if (g_app_context.sidewalk_handle != NULL) {
+                sid_stop(g_app_context.sidewalk_handle, g_sid_config.link_mask);
+                sid_deinit(g_app_context.sidewalk_handle);
+                g_app_context.sidewalk_handle = NULL;
+            }
+            sys_reboot();
+        }
+        processed++;
+    }
+}
+
+#endif /* FREERTOS_ENABLE */
 
 #if BLE_APP_PM_ENABLE
 extern void app_sid_subg_sleep_enter(u8 e, u8 *p, int n);
@@ -644,7 +923,12 @@ void app_sid_wakeup(u8 e, u8 *p, int n)
     #if (FREERTOS_ENABLE)
     proc_keyboardSupend(e,p,n);
     #else
+#if (UI_KEYBOARD_ENABLE)
     proc_keyboard(e,p,n);
+#endif
+#if (UI_BUTTON_ENABLE)
+    proc_button(e,p,n);
+#endif
     #endif
     #endif
     #ifdef CONFIG_SIDEWALK_SUBGHZ_SUPPORT

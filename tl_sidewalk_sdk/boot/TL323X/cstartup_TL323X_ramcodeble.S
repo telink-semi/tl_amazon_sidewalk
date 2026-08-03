@@ -102,6 +102,18 @@ _RESET_ENTRY:
     .byte (0x5A)
 #endif
 
+/* used to check firmware encryption function consistency between the old and new  firmware when OTA upgrading */
+#if APP_HW_FIRMWARE_ENCRYPTION_ENABLE
+    .org 0x16    //correspond to "FIRMWARE_ENCRYPTION_FLAG_ADDR" in mcu_boot.h
+    .byte (0x5A)
+#endif
+
+/* used to check secure boot function consistency between the old and new  firmware when OTA upgrading */
+#if APP_HW_SECURE_BOOT_ENABLE
+    .org 0x17        //correspond to "SECURE_BOOT_FLAG_ADDR" in mcu_boot.h
+    .byte (0x5A)
+#endif
+
     .org 0x18
     .word (BIN_SIZE)
 

@@ -10,6 +10,7 @@ Amazon Sidewalk SDK for the Telink TL3238E1 SoC, targeting the AIOT-DK1 developm
 | **Amazon_sid_sbdt** | Sidewalk Bulk Data Transfer |
 | **Amazon_diagnostics** | Sidewalk diagnostics |
 | **Amazon_sid_900** | Sidewalk 900 demo for multi phy  |
+| **Sensor monitoring** | Temperature + button demo with AWS web app |
 
 ## Hardware Requirements
 
@@ -76,10 +77,10 @@ tl_amazon_sidewalk/
 
 | Component | Version |
 |-----------|---------|
-| Sidewalk SDK | V1.0.0.8 (PR) |
-| Chip | TL3238E1 A0 |
+| Sidewalk SDK | V1.0.0.9 (PR) |
+| Chip | TL3238E1 A0/A1 |
 | EVK | C1T388A20_V1.1 |
-| Platform SDK | V3.11.2 |
+| Platform SDK | V3.11.3 |
 | BLE SDK | V4.0.4.7 |
 | Toolchain | TL32 ELF MCULIB V5F GCC12.2 |
 
@@ -88,6 +89,7 @@ tl_amazon_sidewalk/
 - [Handbook](https://doc.telink-semi.cn/doc/en/software/res/sdk/ble/tl_ble_sdk_multi_connection_en/tl_ble_sdk_multi_connection_en/) — BLE stack user guide
 - [Quick Start](https://doc.telink-semi.cn/doc/application_note/sidewalk/userguide/AN-26032600-E_Amazon_Sidewalk_Quick_Start_Guide.pdf) — Amazon Quick start
 - [Guide](https://doc.telink-semi.cn/doc/application_note/sidewalk/userguide/AN-26051800-E_Amazon_Sidewalk_User_Manual.pdf) — Amazon sidewalk guide
+- [Architecture Guide](doc/telink_sidewalk_architecture_guide.md) — Amazon sidewalk SDK architecture
 - [Release Notes](doc/tl_amazon_sidewalk_Release_Note.md) — Version history
 
 ## Important Notes

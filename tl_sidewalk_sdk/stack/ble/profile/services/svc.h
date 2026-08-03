@@ -34,6 +34,7 @@
 
 #define SERVICE_ELECTRONIC_SHELF_LABEL_HDL 0x0820
 
+#define SERVICE_HID_START_HDL              0x0880
 
 //Telink private Service all 128 uuid
 #define SERVICE_TELINK_PRIVATE_START_HDL 0x8000

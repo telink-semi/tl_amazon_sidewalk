@@ -32,7 +32,8 @@
 #endif
 #include "app.h"
 #include "app_uart.h"
-
+#include <stddef.h>
+#include <stdio.h>
 
 #define UART0_TX_PIN GPIO_FC_PA1
 #define UART0_RX_PIN GPIO_FC_PA2
@@ -89,13 +90,22 @@ int putchar(int ch)
     return uart_send_byte(UART0, ch);
 }
 
-int    fflush (FILE *) {
-#if (TLKAPI_DEBUG_ENABLE)
-    while(tlkapi_debug_isBusy()) {
-        tlkapi_debug_handler();
+int _read(int fd, char *buf, int size)
+{
+    (void)fd;
+    if (size <= 0) {
+        return 0;
     }
-#endif
-    return 0;
+    u8 ch;
+    if (app_uart_ringbuf_get(&ch) != 0) {
+        buf[0] = (char)0xFF;
+        return 1;
+    }
+    if (ch == '\r') {
+        ch = '\n';
+    }
+    buf[0] = (char)ch;
+    return 1;
 }
 
 void app_uart_init(void)
@@ -109,9 +119,14 @@ void app_uart_init(void)
     uart_init(UART0, div, bwpc, UART_PARITY_NONE, UART_STOP_BIT_ONE);
     uart_clr_irq_mask(UART0, UART_RX_IRQ_MASK | UART_TX_IRQ_MASK | UART_TXDONE_MASK | UART_RXDONE_MASK);
     uart_clr_irq_status(UART_MODULE_SEL, UART_TXDONE_IRQ_STATUS);
-    uart_set_irq_mask(UART0, UART_RXDONE_MASK);
+    uart_set_irq_mask(UART0, UART_RXDONE_MASK | UART_RX_IRQ_MASK);
     uart_set_rx_timeout_with_exp(UART0, bwpc, 12, UART_BW_MUL2, 0);
     plic_interrupt_enable(IRQ_UART0);
+    plic_set_priority(IRQ_UART0, 1);
+    #if (AMAZON_DIAG_DEMO == 1 || AMAZON_DUT_DEMO == 1)
+    setvbuf(stdin, NULL, _IONBF, 0);
+    setvbuf(stdout, NULL, _IONBF, 0);
+    #endif
 }
 
 _attribute_ram_code_sec_ void uart0_irq_handler(void)
@@ -132,8 +147,8 @@ _attribute_ram_code_sec_ void uart0_irq_handler(void)
             for (int j = 0; j < uart_fifo_cnt; j++) {
                 app_uart_ringbuf_put(uart_read_byte(UART_MODULE_SEL));
             }
-        uart_clr_irq_status(UART_MODULE_SEL, UART_RXDONE_IRQ_STATUS);
         }
+        uart_clr_irq_status(UART_MODULE_SEL, UART_RXDONE_IRQ_STATUS);
    }
 }
 

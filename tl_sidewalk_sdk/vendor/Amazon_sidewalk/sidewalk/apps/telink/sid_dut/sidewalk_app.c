@@ -184,7 +184,6 @@ static void main_thread(void *context)
     };
     sid_qa_set_config(&config, &pwr_meas_if);
     TL_LOG_I("sid QA cli application started... %x",MEMORY_POOL_END);
-    app_uart_init();
     while (1) {
          sid_cli_process();
          sid_qa_process(QA_PROC_NO_WAIT);
@@ -311,7 +310,6 @@ int app_start(void)
 
 int app_sidewalk_init(void)
 {
-    app_uart_init();
     platform_parameters_t platform_parameters = {
             .mfg_store_region.addr_start = sid_mfg_get_start_addr(),
             .mfg_store_region.addr_end = sid_mfg_get_end_addr(),

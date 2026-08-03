@@ -1,4 +1,172 @@
-## V1.0.0.8(PR)
+## V1.0.0.9(PR)
+
+### Version
+
+* SDK Version: tl_sidewalk_sdk V1.0.0.9
+* Chip Version: 
+    - TL3238E1:                  A0/A1
+* Hardware EVK Version:
+    - TL3238E1:                  C1T388A20_V1.1
+* Platform Version: 
+    - TL3238E1:                  tl_platform_sdk V3.11.3
+* Ble SDK Version: 
+    - TL3238E1:                  tl_ble_sdk V4.0.4.7
+* Toolchain Version:
+    - TL3238E1:                  TL32 ELF MCULIB V5F GCC12.2  (IDE: [TelinkIoTStudio](https://www.telink-semi.com/development-tools))
+
+
+### BREAKING CHANGES
+
+   * N/A
+
+### Features
+
+    * Support FW Encryption via sbdt demo.
+    * Support Np-freertos demo for 900.
+    * Support sensor demo.
+
+### Bug Fixes
+* **sd adc**
+    * (TL323X) Fixed SD ADC aging accuracy degradation issue.
+    * Detailed description: The accuracy of SD ADC will be degraded with aging after a long time of use, resulting in the difference between the measured value and the real value.
+    * Fix effect: Add anti-aging mechanism to ensure the accuracy of SD ADC remains stable after long time usage.
+    * Update suggestion: must be updated.
+* **rf**
+    * (TL323X) Fix the issue that some chips cannot transmit packets normally under low-temperature conditions. 
+    * Detailed description: Some chips fail to transmit packets when the temperature drops below -36°C.
+    * Fix effect: After repair, the RF functions work normally under the temperature condition of -40°C.
+    * Update suggestion: must be updated.
+
+### Refactoring
+
+   * N/A
+
+### Performance Improvements
+
+* **sys**
+  * (TL322X/TL323X/TL321X/TL751X/TL721X/TL521X) Optimize sys_init clock init: check current clock source first. Only switch and configure divider if not already RC_24M, avoiding redundant operations.
+* **rf**
+  * (TL323X)  Optimize the Δf performance difference among chips with different packages.
+* **app**
+   * Fix issue where sid_900 demo fails to transmit data after switching to CSS mode
+   
+### Known issues
+
+* N/A
+
+### CodeSize
+
+* TL323X
+    - Compiling Amazon_sid_dut
+        - Flash bin size: 397.66 KB
+        - IRAM size: 80.38 KB
+        - DRAM size: 38.31 KB
+    - Compiling Amazon_sid_sbdt
+        - Flash bin size: 339.35 KB
+        - IRAM size: 81.64 KB
+        - DRAM size: 21.61 KB
+    - Compiling Amazon_diagnostics
+        - Flash bin size:  152.61 KB
+        - IRAM size: 58.32 KB
+        - DRAM size: 10.55 KB
+    - Compiling Amazon_sid_900
+        - Flash bin size:  327.05 KB
+        - IRAM size: 74.34 KB
+        - DRAM size: 24.61 KB
+    - Compiling sensor_monitoring_demo
+        - Flash bin size:  352.52 KB
+        - IRAM size: 91.66 KB
+        - DRAM size: 25.38 KB
+        
+
+**Note:** 
+  * Use the 900 demo without FreeRTOS: you need to disable FREERTOS_ENABLE and exclude the freertos directory from the compilation path.
+
+
+### 版本
+
+* SDK Version: tl_sidewalk_sdk V1.0.0.9
+* Chip Version: 
+    - TL3238E1:                  A0/A1
+* Hardware EVK Version:
+    - TL3238E1:                  C1T388A20_V1.1
+* Platform Version: 
+    - TL3238E1:                  tl_platform_sdk V3.11.3
+* Ble SDK Version: 
+    - TL3238E1:                  tl_ble_sdk V4.0.4.7
+* Toolchain Version:
+    - TL3238E1:                  TL32 ELF MCULIB V5F GCC12.2  (IDE: [TelinkIoTStudio](https://www.telink-semi.com/development-tools))
+
+
+### BREAKING CHANGES
+
+ * N/A
+ 
+### Features
+
+    * 支持FW加密功能
+    * 支持不带freertos 的 900 demo
+    * 新增sensor monitoring demo
+
+### Bug Fixes
+    
+* **sd adc**
+  * (TL323X) 修复了SD ADC老化精度降低问题，。
+    * 详细描述：SD ADC长时间使用后，精度会随老化而降低，导致测量值与真实值存在差异。
+    * 修复效果：添加防老化机制，确保SD ADC在长时间使用后精度保持稳定。
+    * 更新建议：必须更新。
+* **rf** 
+  * (TL323X)修复部分芯片低温状态下无法正常发送的问题。
+    * 详细描述：部分芯片当温度低于-36°时会出现发不出包的问题。
+    * 修复效果：修复后温度-40°的条件下测试RF功能正常。
+    * 更新建议：必须更新。
+    
+* **app**
+   * 解决 sid_900 demo 在切换到 CSS 模式发送数据失败问题
+   
+### Refactoring
+
+* 优化RAM，900 demo 减少使用RAM 21KB
+
+### Performance Improvements
+
+* **sys**
+  * (TL323X) 优化sys_init中的时钟初始化流程:先读取当前时钟源状态，仅当非RC_24M时才执行时钟切换与分频配置，防止冗余操作.
+* **rf**
+  * (TL323X)优化不同封装的芯片间的Δf表现差异
+
+### Known issues
+
+* N/A
+
+### CodeSize
+
+* TL323X
+     - Compiling Amazon_sid_dut
+        - Flash bin size: 397.66 KB
+        - IRAM size: 80.38 KB
+        - DRAM size: 38.31 KB
+    - Compiling Amazon_sid_sbdt
+        - Flash bin size: 339.35 KB
+        - IRAM size: 81.64 KB
+        - DRAM size: 21.61 KB
+    - Compiling Amazon_diagnostics
+        - Flash bin size:  152.61 KB
+        - IRAM size: 58.32 KB
+        - DRAM size: 10.55 KB
+    - Compiling Amazon_sid_900
+        - Flash bin size:  327.05 KB
+        - IRAM size: 74.34 KB
+        - DRAM size: 24.61 KB
+    - Compiling sensor_monitoring_demo
+        - Flash bin size:  352.52 KB
+        - IRAM size: 91.66 KB
+        - DRAM size: 25.38 KB
+
+ **Note:** 
+ .* 使用不带 freertos 的 900 demo ，需要关闭 FREERTOS_ENABLE 并将 freertos 目录排除在编译目录之外
+ 
+ ## V1.0.0.8(PR)
 
 ### Version
 

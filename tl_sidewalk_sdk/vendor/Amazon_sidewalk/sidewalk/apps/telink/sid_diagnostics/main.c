@@ -168,6 +168,10 @@ _attribute_ram_code_ int main(void)
     #if ((!JTAG_DEBUG_DISABLE) || TLKAPI_RTT_PRINT)
     //jtag_set_pin_en();
     #endif
+
+    void app_uart_init(void);
+    app_uart_init();
+
     #if defined(TLK_ONLY_BLE_HOST)
     if (deepRetWakeUp) {
         sys_n22_init(N22_IRAM_STARTUP_ADDR);

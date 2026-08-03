@@ -296,46 +296,32 @@ int32_t sx126x_dio3_output_voltage(uint8_t voltage)
     reg_val = 0x1 << 3;
     // set bit 3 of 0x0580
     if (sx126x_read_register(ctx, 0x0580, &reg_val, 1) != SX126X_STATUS_OK) {
-        fflush(NULL);
-        TL_LOG_E("sx126x_read_register error %x",ctx);
       break;
     }
     reg_val |= (0x1 << 3);
     if (sx126x_write_register(ctx, 0x0580, &reg_val, 1) != SX126X_STATUS_OK) {
-        fflush(NULL);
-        TL_LOG_E("sx126x_write_register error %x",ctx);
       break;
     }
     // clear bit 3 of 0x0583
     if (sx126x_read_register(ctx, 0x0583, &reg_val, 1) != SX126X_STATUS_OK) {
-        fflush(NULL);
-          TL_LOG_E("sx126x_read_register error2 %x",ctx);
       break;
     }
     reg_val &= ~(0x1 << 3);
     if (sx126x_write_register(ctx, 0x0583, &reg_val, 1) != SX126X_STATUS_OK) {
-        fflush(NULL);
-        TL_LOG_E("sx126x_write_register error2 %x",ctx);
       break;
     }
 
     reg_val = voltage;     // Set voltage
     if (sx126x_write_register(ctx, 0x0920, &reg_val, 1) != SX126X_STATUS_OK) {
-        fflush(NULL);
-        TL_LOG_E("sx126x_read_register error3 %x",ctx);
       break;
     }
 
     // Set Output
     if (sx126x_read_register(ctx, 0x0920, &reg_val, 1) != SX126X_STATUS_OK) {
-        fflush(NULL);
-        TL_LOG_E("sx126x_read_register error4 %x",ctx);
       break;
     }
     reg_val |= (0x1 << 3);     // High output
     if (sx126x_write_register(ctx, 0x0920, &reg_val, 1) != SX126X_STATUS_OK) {
-        fflush(NULL);
-        TL_LOG_E("sx126x_write_register error3 %x",ctx);
       break;
     }
     err = SID_ERROR_NONE;

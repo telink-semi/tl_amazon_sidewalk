@@ -78,9 +78,13 @@ static inline void compiler_barrier(void)
 _attribute_ram_code_ void sid_pal_enter_critical_region(void)
 {
     compiler_barrier();
-    saved_int_stat = irq_disable();
+    //saved_int_stat = irq_disable();
+    uint32_t curr_stat = irq_disable();
+    if(le_crit_cnt == 0) {
+        saved_int_stat = curr_stat;
+    }
     le_crit_cnt ++;
-    compiler_barrier();
+    compiler_barrier(); 
 }
 
 

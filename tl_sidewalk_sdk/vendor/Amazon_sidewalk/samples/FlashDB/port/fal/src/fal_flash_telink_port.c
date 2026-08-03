@@ -23,7 +23,7 @@ static int init(void)
 int on_ic_read_cnt  = 0;
 int on_ic_write_cnt = 0;
 
-_attribute_data_retention_sec_ static u32 data_flash_addr = CFG_ADR_SIDEWALK_2M_FLASH;
+_attribute_data_retention_sec_ static u32 data_flash_addr = CFG_ADR_SIDEWALK_1M_FLASH;
 void feed_dog(void)
 {
 
@@ -107,7 +107,7 @@ static int erase(long offset, size_t size)
 _attribute_data_retention_sec_ struct fal_flash_dev telink_onchip_flash =
 {
     .name       = "telink_onchip",
-    .addr       = CFG_ADR_SIDEWALK_2M_FLASH,
+    .addr       = CFG_ADR_SIDEWALK_1M_FLASH,
     .len        = TAG_DATA_FLASH_SIZE,
     .blk_size   = 4*1024,
     .ops        = {init, read, write, erase},

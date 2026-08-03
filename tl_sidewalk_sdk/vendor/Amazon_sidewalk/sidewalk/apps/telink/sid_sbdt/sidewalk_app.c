@@ -195,7 +195,7 @@ bool app_platform_flash_write(uint32_t offset, void *data, size_t size)
     static u8 fw_flag = 0;
     int ret = 0;
 
-    TL_LOG_D("app_platform_flash_write %x %x %d\r\n",offset,Addr,size);
+    TL_LOG_D("app_platform_flash_write %x %d\r\n",offset,size);
 
     if(fw_flag == 0)
     {

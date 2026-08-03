@@ -572,6 +572,9 @@ __attribute__((used)) int _write(int fd, const unsigned char *buf, int size)
     if (!tlkapi_print_fifo) {
         return 0;
     }
+    #if (AMAZON_DIAG_DEMO == 1 || AMAZON_DUT_DEMO == 1)
+    tlkapi_debug_handler();
+    #endif
 
     if(tlkapi_send_str_isFifoFull(tlkapi_print_fifo))
     {

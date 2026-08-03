@@ -1,0 +1,206 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "iam:AttachRolePolicy",
+                "iam:CreatePolicy*",
+                "iam:CreateRole",
+                "iam:DeleteRole",
+                "iam:DeleteRolePolicy",
+                "iam:DetachRolePolicy",
+                "iam:GetRole",
+                "iam:GetRolePolicy",
+                "iam:PassRole",
+                "iam:PutRolePolicy",
+                "iam:TagPolicy",
+                "iam:TagRole",
+                "iam:List*",
+                "iam:Update*"
+            ],
+            "Resource": [
+                "arn:aws:iam::<account_ID>:role/GrafanaDestinationRole",
+                "arn:aws:iam::<account_ID>:role/GrafanaRuleRole",
+                "arn:aws:iam::<account_ID>:role/GrafanaWorkspaceRole"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "cloudformation:CreateStack",
+                "cloudformation:DescribeStackEvents",
+                "cloudformation:DescribeStackResources",
+                "cloudformation:DescribeStacks",
+                "cloudformation:DeleteStack",
+                "cloudformation:TagResource",
+                "cloudformation:UpdateStack"
+            ],
+            "Resource": "arn:aws:cloudformation:*:<account_ID>:stack/SidewalkGrafanaStack/*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "iot:CreatePolicy*",
+                "iot:CreateTopicRule",
+                "iot:DeletePolicy*",
+                "iot:DeleteTopicRule",
+                "iot:GetPolicy*",
+                "iot:GetTopicRule",
+                "iot:ListPolicyVersions",
+                "iot:TagResource",
+                "iot:List*",
+                "iot:Update*"
+            ],
+            "Resource": [
+                "arn:aws:iot:*:<account_ID>:policy/GrafanaReceiveWirelessEventNotificationsPolicy",
+                "arn:aws:iot:*:<account_ID>:rule/GrafanaNotificationRule",
+                "arn:aws:iot:*:<account_ID>:rule/GrafanaUplinkRule"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "iotwireless:GetDestination",
+                "iotwireless:DeleteDestination",
+                "iotwireless:CreateDestination",
+                "iotwireless:UpdateDestination",
+                "iotwireless:CreateDeviceProfile",
+                "iotwireless:GetDeviceProfile",
+                "iotwireless:CreateWirelessDevice",
+                "iotwireless:GetWirelessDevice",
+                "iotwireless:List*",
+                "iotwireless:Update*"
+            ],
+            "Resource": [
+                "arn:aws:iotwireless:*:<account_ID>:Destination/*",
+                "arn:aws:iotwireless:*:<account_ID>:DeviceProfile/*",
+                "arn:aws:iotwireless:*:<account_ID>:WirelessDevice/*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": "iotwireless:UpdateEventConfigurationByResourceTypes",
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "timestream:CreateDatabase",
+                "timestream:CreateTable",
+                "timestream:DeleteDatabase",
+                "timestream:DeleteTable",
+                "timestream:DescribeEndpoints",
+                "timestream:DescribeTable",
+                "timestream:ListDatabases",
+                "timestream:ListTables",
+                "timestream:ListTagsForResource",
+                "timestream:UpdateDatabase",
+                "timestream:UpdateTable",
+                "timestream:DescribeDatabase",
+                "timestream:DescribeScheduledQuery",
+                "timestream:PrepareQuery",
+                "timestream:Select",
+                "timestream:DeleteScheduledQuery",
+                "timestream:ExecuteScheduledQuery",
+                "timestream:SelectValues",
+                "timestream:CancelQuery",
+                "timestream:ListScheduledQueries",
+                "timestream:CreateScheduledQuery",
+                "timestream:TagResource",
+                "timestream:List*",
+                "timestream:Update*"
+            ],
+            "Resource": [
+                "arn:aws:timestream:*:<account_ID>:database/GrafanaTimestream",
+                "arn:aws:timestream:*:<account_ID>:database/GrafanaTimestream/*",
+                "arn:aws:timestream:*:<account_ID>:database/GrafanaTimestream/table/Notifications",
+                "arn:aws:timestream:*:<account_ID>:database/GrafanaTimestream/table/UplinkMessages"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "timestream:DescribeEndpoints"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "grafana:CreateWorkspaceApiKey",
+                "grafana:DeleteWorkspace",
+                "grafana:DeleteWorkspaceApiKey",
+                "grafana:DescribeWorkspace",
+                "grafana:DescribeWorkspaceAuthentication",
+                "grafana:TagResource",
+                "grafana:List*",
+                "grafana:Update*"
+            ],
+            "Resource": "arn:aws:grafana:*:<account_ID>:/workspaces*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "grafana:CreateWorkspace",
+                "grafana:ListWorkspaces"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "identitystore:CreateGroup",
+                "identitystore:CreateGroupMembership",
+                "identitystore:CreateUser",
+                "identitystore:DeleteGroup",
+                "identitystore:DeleteGroupMembership",
+                "identitystore:DeleteUser",
+                "identitystore:GetGroupId",
+                "identitystore:GetUserId",
+                "identitystore:ListGroups",
+                "identitystore:List*",
+                "identitystore:Update*"
+            ],
+            "Resource": [
+                "arn:aws:identitystore::<account_ID>:identitystore/*",
+                "arn:aws:identitystore:::group/*",
+                "arn:aws:identitystore:::membership/*",
+                "arn:aws:identitystore:::user/*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "sso:CreateManagedApplicationInstance",
+                "sso:DescribeRegisteredRegions",
+                "sso:GetManagedApplicationInstance",
+                "sso:DeleteManagedApplicationInstance",
+                "sso:GetSharedSsoConfiguration",
+                "sso:List*",
+                "sso:Update*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogStream",
+                "logs:CreateLogGroup",
+                "logs:DeleteLogGroup",
+                "logs:DeleteLogStream",
+                "logs:DescribeLogStreams",
+                "logs:DescribeLogGroups",
+                "logs:PutRetentionPolicy",
+                "logs:PutLogEvents",
+                "logs:TagLogGroup",
+                "logs:TagResource",
+                "logs:List*",
+                "logs:Update*"
+            ],
+            "Resource": [
+                "arn:aws:logs:us-east-1:<account_ID>:log-group:GrafanaRuleErrors:*"
+            ]
+        }
+    ]
+}

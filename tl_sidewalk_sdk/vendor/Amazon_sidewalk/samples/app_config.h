@@ -30,6 +30,10 @@
 #define ACL_PERIPHR_MAX_NUM 1 // ACL peripheral maximum number
 
 ///////////////////////// Feature Configuration////////////////////////////////////////////////
+#define REPORT_LED_STATUS             0 // Will break sidewalk sensor monitoring demo with Amazon's web app
+#define APP_REPORT_IMU                0 // ^^^^^^
+#define APP_USE_REAL_SENSORS          1 // if 0 fake data will be sent, I2C won't be initialized
+
 #define ACL_PERIPHR_SMP_ENABLE        0 //1 for smp,  0 no security
 #define BLE_OTA_SERVER_ENABLE         1
 
@@ -44,6 +48,15 @@
 #ifndef AMAZON_900_DEMO
     #define AMAZON_900_DEMO 0
 #endif
+
+#ifndef AMAZON_SENSOR_DEMO
+    #define AMAZON_SENSOR_DEMO 0
+#endif
+
+#ifndef AMAZON_BLE_DEMO
+    #define AMAZON_BLE_DEMO 0
+#endif
+
 
 #if AMAZON_DIAG_DEMO
 #define BLE_APP_PM_ENABLE             0
@@ -82,6 +95,8 @@
 #else
 #if AMAZON_DIAG_DEMO || AMAZON_DUT_DEMO
 #define configTOTAL_HEAP_SIZE     ( 23 * 1024)
+#elif AMAZON_SENSOR_DEMO
+#define configTOTAL_HEAP_SIZE     ( 33 * 1024)
 #else
 #define configTOTAL_HEAP_SIZE     ( 18 * 1024)
 #endif
@@ -91,7 +106,7 @@
 #define HW_BOARD_1_X 0
 #define HW_BOARD_2_2 1
 
-#define config_HW_SELECT HW_BOARD_1_X
+#define config_HW_SELECT HW_BOARD_2_2
 
 /////////////////////// Board Select Configuration ///////////////////////////////
 #if (MCU_CORE_TYPE == MCU_CORE_B91)
@@ -104,6 +119,42 @@
     #define BOARD_SELECT BOARD_321X_EVK_C1T335A20 //BOARD_321X_EVK_C1T331A20 //BOARD_321X_EVK_C1T335A20
 #elif (MCU_CORE_TYPE == MCU_CORE_TL322X)
     #define BOARD_SELECT BOARD_322X_EVK_C1T371A20
+#endif
+
+#if AMAZON_SENSOR_DEMO
+// Buttons
+#define APP_NUMBER_OF_BUTTONS   (1)       // only one button is reported to the app
+                                          // second one is used for Link type swithing.
+#if (config_HW_SELECT == HW_BOARD_2_2)
+#define BUTTON1_GPIO            GPIO_PD2
+#define BUTTON2_GPIO            GPIO_PB4 // must be freed for LCD display support
+#else
+#define BUTTON1_GPIO            GPIO_PD2
+#define BUTTON2_GPIO            GPIO_PA7 // must be freed for LCD display support
+#endif
+
+// LEDs
+#define APP_NUMBER_OF_LEDS      (2)
+#if (config_HW_SELECT == HW_BOARD_2_2)
+#define LED1_GPIO               GPIO_PC1
+#define LED2_GPIO               GPIO_PB7
+#else
+#define LED1_GPIO               GPIO_PD7
+#define LED2_GPIO               GPIO_PD6
+#endif
+
+// I2C for sensors
+#define I2C_FOR_SENSORS         I2C0
+#define I2C_CLK_SPEED           (400 * 1000) // must < 400KHz
+#define I2C_SDA_PIN             GPIO_PD0
+#define I2C_SCL_PIN             GPIO_PE2
+
+// SPI Config for LCD display
+#define SPI_CSN_PIN             GPIO_PD4
+#define SPI_CLK_PIN             GPIO_PD2
+#define SPI_MOSI_PIN            GPIO_PA2
+#define SPI_CLK_SPEED           (12 * 1000000)
+#define LCD_ST7789_DC           GPIO_PA7
 #endif
 
 ///////////////////////// UI Configuration ////////////////////////////////////////////////////
@@ -123,6 +174,7 @@
 #define UI_BUTTON_ENABLE   0
 #endif
 #define  APP_HW_SECURE_BOOT_ENABLE 0
+#define  APP_HW_FIRMWARE_ENCRYPTION_ENABLE 0
 ///////////////////////// DEBUG  Configuration ////////////////////////////////////////////////
 #define DEBUG_GPIO_ENABLE    0
 
@@ -130,7 +182,7 @@
 
 #define TLKAPI_DEBUG_ENABLE  1
 #define TLKAPI_DEBUG_CHANNEL TLKAPI_DEBUG_CHANNEL_GSUART
-#if AMAZON_DIAG_DEMO || AMAZON_DUT_DEMO
+#if AMAZON_DIAG_DEMO || AMAZON_DUT_DEMO || AMAZON_SENSOR_DEMO
 #define TLKAPI_DEBUG_FIFO_NUM  16
 #endif
 
@@ -254,7 +306,7 @@
 #define RADIO_RESET      GPIO_PB5
 #define RADIO_BUSY       GPIO_PA3
 #define RADIO_DIO_1      GPIO_PD3
-#define ANT_SWITCH_POWER GPIO_PE2
+#define ANT_SWITCH_POWER GPIO_NONE_PIN
 
 #else
 #define RADIO_MOSI       GPIO_PE4
@@ -267,7 +319,7 @@
 #define RADIO_BUSY       GPIO_PB4
 //#define RADIO_BUSY       GPIO_PA3
 #define RADIO_DIO_1      GPIO_PD3
-#define ANT_SWITCH_POWER GPIO_PE2
+#define ANT_SWITCH_POWER GPIO_NONE_PIN
 #endif
 
 #include "../common/default_config.h"

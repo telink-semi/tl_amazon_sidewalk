@@ -206,7 +206,7 @@ sid_error_t sid_pal_crypto_hmac(sid_pal_hmac_params_t *params)
 
 #define  PAL_AES_BLOCK_SIZE 16
 #define PAL_AES_BLOCK_SIZE_MAX_SIZE  1152
-#if AMAZON_DIAG_DEMO || AMAZON_DUT_DEMO
+#if AMAZON_DIAG_DEMO || AMAZON_DUT_DEMO || AMAZON_SENSOR_DEMO
 __attribute__((section(".retention_data"))) uint8_t temp_in_buf[PAL_AES_BLOCK_SIZE_MAX_SIZE] ;
 #else
 __attribute__((section(".ram_data_ble"))) uint8_t temp_in_buf[PAL_AES_BLOCK_SIZE_MAX_SIZE] ;

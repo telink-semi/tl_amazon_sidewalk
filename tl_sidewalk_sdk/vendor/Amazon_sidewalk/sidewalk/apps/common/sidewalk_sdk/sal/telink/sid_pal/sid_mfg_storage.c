@@ -65,7 +65,7 @@ struct mfg_header {
 };
 
 _attribute_ble_data_retention_ static uint32_t sid_mfg_version = INVALID_VERSION;
-_attribute_ble_data_retention_ static uint32_t sid_mfg_start_addr = CFG_ADR_SIDEWALK_MFG_2M_FLASH;
+_attribute_ble_data_retention_ static uint32_t sid_mfg_start_addr = CFG_ADR_SIDEWALK_MFG_1M_FLASH;
 
 static  tlv_db_t  tlv_flash;
 

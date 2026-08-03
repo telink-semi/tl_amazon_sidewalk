@@ -788,6 +788,10 @@ _attribute_no_inline_ void user_init_normal(void)
     /* attention that "blc_ota_enableSecureBoot_in_one" must be called before "blc_ota initOtaServer_module" !!! */
     blc_ota_enableSecureBoot_in_one();
     #endif
+    #if APP_HW_FIRMWARE_ENCRYPTION_ENABLE
+    ble_sts_t blc_ota_enableFirmwareEncryption_in_one(void);
+    blc_ota_enableFirmwareEncryption_in_one();
+    #endif
     blc_ota_initOtaServer_module();
     blc_ota_setOtaProcessTimeout(300);
 
@@ -846,6 +850,7 @@ _attribute_ram_code_ void user_init_deepRetn(void)
 #endif
 }
 
+extern uint8_t g_app_event_queue_empty(void);
 void app_process_power_management(void)
 {
 #if (BLE_APP_PM_ENABLE)
@@ -871,7 +876,24 @@ void app_process_power_management(void)
      #endif
         if (user_task_flg) {
             bls_pm_setManualLatency(0);
+        } 
+#if (!FREERTOS_ENABLE)
+        
+        else if(!blc_isBleSchedulerBusy() && blc_pm_getSleepMask() != 0 && g_app_event_queue_empty() && sid_pal_radio_get_status() == 2)
+        {
+            extern int blc_pm_OShandler(uint32_t expect_time);
+            uint32_t soft_wake_tick = blc_pm_getAppWakeupLowPower();
+            soft_wake_tick -= clock_time();
+            //tlkapi_printf(APP_LOG_EN, "!! %d\n", soft_wake_tick / SYSTEM_TIMER_TICK_1MS);
+            if (soft_wake_tick > SYSTEM_TIMER_TICK_1MS * 5000){
+                soft_wake_tick = SYSTEM_TIMER_TICK_1MS * 5000;
+            }
+            if (soft_wake_tick > SYSTEM_TIMER_TICK_1MS * 5){
+                blc_pm_OShandler(soft_wake_tick);
+            }
+           
         }
+#endif
     }
 #endif
 }

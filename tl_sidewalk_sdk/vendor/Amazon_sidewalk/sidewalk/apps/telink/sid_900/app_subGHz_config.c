@@ -144,7 +144,7 @@ const radio_sx126x_device_config_t radio_sx1262_cfg = {
     .tcxo =
         {
             .ctrl = SX126X_TCXO_CTRL_NONE,
-	        .dio3_to_mcu_pin = HALO_GPIO_NOT_CONNECTED,
+            .dio3_to_mcu_pin = HALO_GPIO_NOT_CONNECTED,
         },
 
     .regional_config =
@@ -236,7 +236,7 @@ _attribute_ram_code_ void app_sid_subg_wakeup(u8 e, u8 *p, int n)
  */
 int32_t sx126x_dio3_output_voltage(uint8_t voltage)
 {
-  halo_drv_semtech_ctx_t *ctx = sx126x_get_drv_ctx();
+  halo_drv_semtech_ctx_t *ctx = (halo_drv_semtech_ctx_t *)sx126x_get_drv_ctx();
   int32_t err = SID_ERROR_GENERIC;
   uint8_t reg_val = 0;
   do {
@@ -282,7 +282,7 @@ int32_t sx126x_dio3_gpio_clear(void)
 {
   int32_t status = SX126X_STATUS_OK;
   uint8_t reg_val = 0x00;
-  halo_drv_semtech_ctx_t *ctx = sx126x_get_drv_ctx();
+  halo_drv_semtech_ctx_t *ctx = (halo_drv_semtech_ctx_t *)sx126x_get_drv_ctx();
   // set bit 3 of 0x0920
   status = sx126x_read_register(ctx, 0x0920, &reg_val, 1);
   reg_val &= ~(1 << 3);
@@ -297,12 +297,12 @@ int32_t sx126x_dio3_gpio_clear(void)
 static void radio_irq(uint32_t pin, void * callback_arg)
 {
     (void)callback_arg;
-    halo_drv_semtech_ctx_t *ctx = sx126x_get_drv_ctx();
+    halo_drv_semtech_ctx_t *ctx = (halo_drv_semtech_ctx_t *)sx126x_get_drv_ctx();
     uint8_t pinState;
     if (sid_pal_gpio_read(pin, &pinState) == SID_ERROR_NONE) {
         if (pinState) {
             sid_pal_uptime_now(&(ctx->radio_rx_packet->rcv_tm));
-        	ctx->irq_handler();
+            ctx->irq_handler();
         }
     }
 }
@@ -310,7 +310,7 @@ static void radio_irq(uint32_t pin, void * callback_arg)
 int32_t sid_pal_radio_reinit(void)
 {
     int32_t err = 0;
-    halo_drv_semtech_ctx_t *ctx = sx126x_get_drv_ctx();
+    halo_drv_semtech_ctx_t *ctx = (halo_drv_semtech_ctx_t *)sx126x_get_drv_ctx();
 #ifdef BOARD_HAL_IO_EXPANDER_SUBG_BAND_PIN
         if (sid_pal_gpio_set_direction(BOARD_HAL_EXP_GPIO( BOARD_HAL_IO_EXPANDER_SUBG_BAND_PIN),
             SID_PAL_GPIO_DIRECTION_OUTPUT) != SID_ERROR_NONE) {

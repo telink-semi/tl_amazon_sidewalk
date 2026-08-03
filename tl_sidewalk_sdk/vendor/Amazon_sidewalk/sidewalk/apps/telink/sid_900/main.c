@@ -82,12 +82,25 @@ _attribute_ram_code_ void gpio_irq_kb_handler(void)
     gpio_clr_irq_status(GPIO_IRQ_IRQ1);
     plic_interrupt_disable(IRQ_GPIO_IRQ1);
     gpio_clr_irq_mask(IRQ_GPIO_IRQ1);
-    xTaskResumeFromISR(hButtonTask);
+    if(hButtonTask != NULL)
+    	xTaskResumeFromISR(hButtonTask);
     DBG_CHN6_HIGH;
     DBG_CHN6_LOW;
 }
 
 PLIC_ISR_REGISTER_OS(gpio_irq_kb_handler, IRQ_GPIO_IRQ1)
+#else
+#if (1)
+_attribute_ram_code_ void gpio_irq_bt_handler(void)
+{
+    gpio_clr_irq_status(GPIO_IRQ_IRQ1);
+    plic_interrupt_disable(IRQ_GPIO_IRQ1);
+    gpio_clr_irq_mask(IRQ_GPIO_IRQ1);
+}
+
+PLIC_ISR_REGISTER(gpio_irq_bt_handler, IRQ_GPIO_IRQ1)
+#endif
+
 #endif
 
 /**
@@ -144,7 +157,8 @@ __INLINE void blc_app_system_init(void)
     #error "Not Supported Chip!!!"
 #endif
 }
-void app_start(void);
+int app_start(void);
+int app_sidewalk_init(void);
 
 /**
  * @brief       This is main function
@@ -197,7 +211,7 @@ _attribute_ram_code_ int main(void)
     #endif
     } else { //MCU power_on or wake_up from deepSleep mode
         user_init_normal();
-     
+
 #if (FREERTOS_ENABLE)
         app_start();
 #else

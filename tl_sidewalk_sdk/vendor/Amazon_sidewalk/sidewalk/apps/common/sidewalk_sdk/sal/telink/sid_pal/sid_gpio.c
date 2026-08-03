@@ -74,8 +74,8 @@ static gpio_irq_context_t * get_irq_context(uint32_t gpio_number);
 #define   gpio_calloc(n, x)  pvPortMalloc(n*x)
 #define   gpio_free(ptr)     vPortFree(ptr)
 #else
-#define   gpio_calloc(n, x)  app_malloc_nonreten(n*x)
-#define   gpio_free(ptr)     app_free_nonreten(ptr)
+#define   gpio_calloc(n, x)  malloc(n*x) //app_malloc_nonreten(n*x)
+#define   gpio_free(ptr)     free(ptr) //app_free_nonreten(ptr)
 #endif
 #define  GPIO_INVALID_IRQ_NO  0xFF
 

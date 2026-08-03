@@ -45,15 +45,16 @@ void Portble_btn_l_press(u8 key);
 int app_button_press_proc(void);
 int app_button_long_press(void);
 
+#define BTN_PRESS_TIME_MS       1000
+#define BTN_PRESS_LONG_TIME_MS  300
+
+_attribute_data_retention_ unsigned char btn_value;
+
 #if FREERTOS_ENABLE
 #define CONV_MS_TO_TICKS(x)    ((x)/2)
 
-#define BTN_PRESS_TIME_MS 1000
-#define BTN_PRESS_LONG_TIME_MS 300
-
 _attribute_data_retention_ TimerHandle_t   btnPressTimer;
 //_attribute_data_retention_ TimerHandle_t   btnLongPressTimer ;
-_attribute_data_retention_ unsigned char btn_value;
 
 
 
@@ -113,6 +114,45 @@ void app_ui_os_timer_init(void)
 
 }
 
+#else
+
+_attribute_data_retention_ static u8 app_btn_press_timer_running = 0;
+_attribute_data_retention_ static u32 app_btn_press_timer_tick = 0;
+
+static void app_ui_stop_btn_timer(void)
+{
+    app_btn_press_timer_running = 0;
+}
+
+static void app_ui_start_btn_timer(void)
+{
+    app_btn_press_timer_tick = clock_time();
+    app_btn_press_timer_running = 1;
+}
+
+static void app_ui_stop_l_btn_timer(void)
+{
+}
+
+static void app_ui_start_l_btn_timer(void)
+{
+}
+
+void app_ui_os_timer_init(void)
+{
+    app_btn_press_timer_running = 0;
+    app_btn_press_timer_tick = 0;
+    tlkapi_printf(APP_BUTTON_LOG_EN,"app_ui_os_timer_init done");
+}
+
+static void app_ui_os_timer_process(void)
+{
+    if (app_btn_press_timer_running &&
+        clock_time_exceed(app_btn_press_timer_tick, BTN_PRESS_TIME_MS * 1000)) {
+        app_btn_press_timer_running = 0;
+        app_button_press_proc();
+    }
+}
 
 #endif
 
@@ -286,17 +326,22 @@ void keyboard_init(void)
 _attribute_ble_data_retention_ static u32 keyScanTick            = 0;
 _attribute_ble_data_retention_ static int gpioWakeup_keyProc_cnt = 0;
 /////////////////////////////////////////////////////////////////////
-#define MAX_BTN_SIZE               2
 #define BTN_VALID_LEVEL            0
 
 #define USER_BTN_1                0x01
 #define USER_BTN_2                0x02
-#define USER_BTN_3                0x0f
+#define USER_BTN_3                0xf1
+#define USER_BTN_4                0xf0
 
-
+#if (config_HW_SELECT == HW_BOARD_2_2)
+#define MAX_BTN_SIZE               4
+_attribute_data_retention_    u32 ctrl_btn[] = {SW1_GPIO, SW2_GPIO,SW3_GPIO,SW4_GPIO};
+_attribute_data_retention_    u8 btn_map[MAX_BTN_SIZE] = {USER_BTN_1, USER_BTN_2,USER_BTN_3,USER_BTN_4};
+#else
+#define MAX_BTN_SIZE               2
 _attribute_data_retention_    u32 ctrl_btn[] = {SW1_GPIO, SW2_GPIO};
 _attribute_data_retention_    u8 btn_map[MAX_BTN_SIZE] = {USER_BTN_1, USER_BTN_2};
-
+#endif
 
 
 _attribute_data_retention_    int key_not_released = 0;
@@ -393,6 +438,12 @@ u8 vc_detect_button(int read_key)
  */
 void proc_button(u8 e, u8 *p, int n)
 {
+    (void)p;
+    (void)n;
+#if !FREERTOS_ENABLE
+    app_ui_os_timer_process();
+#endif
+
     if (e == BLT_EV_FLAG_GPIO_EARLY_WAKEUP) {
         gpioWakeup_keyProc_cnt = GPIO_WAKEUP_KEYPROC_CNT;
     } else if (gpioWakeup_keyProc_cnt) {
@@ -435,6 +486,11 @@ void proc_button(u8 e, u8 *p, int n)
                 button_press_flag = 1;
             }
             else if(key0 == USER_BTN_3)
+            {
+                app_button_proc(true);
+                button_press_flag = 1;
+            }
+            else if(key0 == USER_BTN_4)
             {
                 app_button_proc(true);
                 button_press_flag = 1;
@@ -488,12 +544,22 @@ void button_retention_init(void)
     gpio_set_irq(GPIO_IRQ1, SW2_GPIO, INTR_FALLING_EDGE);
 
 
-    gpio_set_irq_mask(GPIO_IRQ_IRQ1);
-    plic_interrupt_enable(IRQ_GPIO_IRQ1);
 
     #if (BLE_APP_PM_ENABLE)
+    #if (config_HW_SELECT == HW_BOARD_2_2)
+    gpio_set_up_down_res(SW3_GPIO, GPIO_PIN_PULLUP_10K);
+    gpio_set_irq(GPIO_IRQ1, SW3_GPIO, INTR_FALLING_EDGE);
+    gpio_set_up_down_res(SW4_GPIO, GPIO_PIN_PULLUP_10K);
+    gpio_set_irq(GPIO_IRQ1, SW4_GPIO, INTR_FALLING_EDGE);
+    pm_set_gpio_wakeup(SW3_GPIO,WAKEUP_LEVEL_LOW, 1);
+    pm_set_gpio_wakeup(SW4_GPIO,WAKEUP_LEVEL_LOW, 1);
+    #endif
     pm_set_gpio_wakeup(SW1_GPIO,WAKEUP_LEVEL_LOW, 1);
     pm_set_gpio_wakeup(SW2_GPIO,WAKEUP_LEVEL_LOW, 1);
+
+    gpio_set_irq_mask(GPIO_IRQ_IRQ1);
+    plic_interrupt_enable(IRQ_GPIO_IRQ1);
+ 
 //    blc_ll_registerTelinkControllerEventCallback(BLT_EV_FLAG_SLEEP_ENTER, &app_set_button_wakeup);
     #endif
 }
@@ -509,29 +575,30 @@ void button_init(void)
     gpio_output_dis(SW2_GPIO);
     gpio_input_en(SW2_GPIO);
 
-//    gpio_function_en(SW3_GPIO);
-//    gpio_output_dis(SW3_GPIO);
-//    gpio_input_en(SW3_GPIO);
-
-
     gpio_set_up_down_res(SW1_GPIO, GPIO_PIN_PULLUP_10K);
-    gpio_set_irq(GPIO_IRQ1, SW1_GPIO, INTR_FALLING_EDGE);
-
     gpio_set_up_down_res(SW2_GPIO, GPIO_PIN_PULLUP_10K);
+
+    gpio_set_irq(GPIO_IRQ1, SW1_GPIO, INTR_FALLING_EDGE);
     gpio_set_irq(GPIO_IRQ1, SW2_GPIO, INTR_FALLING_EDGE);
 
-//    gpio_set_up_down_res(SW3_GPIO, GPIO_PIN_PULLUP_10K);
-//    gpio_set_irq(GPIO_IRQ1, SW3_GPIO, INTR_LOW_LEVEL);
-
-    gpio_set_irq_mask(GPIO_IRQ_IRQ1);
-    plic_interrupt_enable(IRQ_GPIO_IRQ1);
+	#if (config_HW_SELECT == HW_BOARD_2_2)
+	gpio_set_up_down_res(SW3_GPIO, GPIO_PIN_PULLUP_10K);
+	gpio_set_up_down_res(SW4_GPIO, GPIO_PIN_PULLUP_10K);
+	gpio_set_irq(GPIO_IRQ1, SW3_GPIO, INTR_FALLING_EDGE);
+	gpio_set_irq(GPIO_IRQ1, SW4_GPIO, INTR_FALLING_EDGE);
+	#endif
 
     #if (BLE_APP_PM_ENABLE)
     pm_set_gpio_wakeup(SW1_GPIO,WAKEUP_LEVEL_LOW, 1);
     pm_set_gpio_wakeup(SW2_GPIO,WAKEUP_LEVEL_LOW, 1);
-//    pm_set_gpio_wakeup(SW3_GPIO,WAKEUP_LEVEL_LOW, 1);
-    //blc_ll_registerTelinkControllerEventCallback(BLT_EV_FLAG_SLEEP_ENTER, &app_set_button_wakeup);
+    #if (config_HW_SELECT == HW_BOARD_2_2)
+    pm_set_gpio_wakeup(SW3_GPIO,WAKEUP_LEVEL_LOW, 1);
+    pm_set_gpio_wakeup(SW4_GPIO,WAKEUP_LEVEL_LOW, 1);
     #endif
+
+    #endif
+    gpio_set_irq_mask(GPIO_IRQ_IRQ1);
+    plic_interrupt_enable(IRQ_GPIO_IRQ1);
 
 //    #if (FREERTOS_ENABLE &&  BLE_APP_PM_ENABLE)
 //    extern void proc_keyboardSupend (u8 e, u8 *p, int n);
@@ -574,8 +641,12 @@ bool app_button_press_state(void)
         if(gpio_read(SW1_GPIO) == 0) press_state = true;
     if(btn_value == USER_BTN_2)
         if(gpio_read(SW2_GPIO) == 0) press_state = true;
-//    if(btn_value == USER_BTN_3)
-//        if(gpio_read(SW3_GPIO) == 0) press_state = true;
+    #if (config_HW_SELECT == HW_BOARD_2_2)
+    if(btn_value == USER_BTN_3)
+        if(gpio_read(SW3_GPIO) == 0) press_state = true;
+    if(btn_value == USER_BTN_4)
+        if(gpio_read(SW4_GPIO) == 0) press_state = true;
+    #endif
 #endif
 
     return press_state;
@@ -736,13 +807,14 @@ void app_ui_Entry_suspend(void)
     plic_interrupt_enable(IRQ_GPIO_IRQ1);
     #endif
 
-
     #if (UI_BUTTON_ENABLE)
     gpio_set_irq(GPIO_IRQ1, SW1_GPIO, INTR_LOW_LEVEL);
     gpio_set_irq(GPIO_IRQ1, SW2_GPIO, INTR_LOW_LEVEL);
-//    gpio_set_irq(GPIO_IRQ1, SW3_GPIO, INTR_LOW_LEVEL);
-    extern void proc_keyboardSupend (u8 e, u8 *p, int n);
-    //blc_ll_registerTelinkControllerEventCallback (BLT_EV_FLAG_GPIO_EARLY_WAKEUP, &proc_keyboardSupend);
+    #if (config_HW_SELECT == HW_BOARD_2_2)
+    gpio_set_irq(GPIO_IRQ1, SW3_GPIO, INTR_LOW_LEVEL);
+    gpio_set_irq(GPIO_IRQ1, SW4_GPIO, INTR_LOW_LEVEL);
+    #endif
+
     gpio_set_irq_mask(GPIO_IRQ_IRQ1);
     plic_interrupt_enable(IRQ_GPIO_IRQ1);
     #endif

@@ -109,6 +109,18 @@
     #define PD2_FUNC AS_GPIO
     #define PULL_WAKEUP_SRC_PD2 PM_PIN_PULLUP_10K
 
+
+    #define SW3_GPIO                  GPIO_PB6
+    #define PB6_INPUT_ENABLE 1
+    #define PB6_FUNC AS_GPIO
+    #define PULL_WAKEUP_SRC_PB6 PM_PIN_PULLUP_10K
+
+    #define SW4_GPIO                  GPIO_PB4
+    #define PB4_INPUT_ENABLE 1
+    #define PB4_FUNC AS_GPIO
+    #define PULL_WAKEUP_SRC_PB4 PM_PIN_PULLUP_10K
+
+
     #else
     #if JTAG_DEBUG_DISABLE
     #define SW1_GPIO                  GPIO_PD5

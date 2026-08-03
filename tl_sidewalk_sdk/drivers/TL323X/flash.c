@@ -217,6 +217,14 @@ _attribute_text_sec_ unsigned char flash_dread_decrypt_check(unsigned long addr,
     return check_data;
 }
 
+//BLE SDK IN USED
+_attribute_text_sec_ void flash_dread_decrypt_read(unsigned long addr, unsigned long plain_len, unsigned char *plain_buf)
+{
+    DISABLE_BTB;
+    flash_mspi_read_decrypt_ram(FLASH_DREAD_CMD, addr, plain_buf, plain_len);
+    ENABLE_BTB;
+}
+
 /**
  * @brief       This function serves to decrypt the read data from the flash at the specified address and compare it with the plain text in 4*IO read mode.
  * @param[in]   addr        - the access address of flash.

@@ -290,8 +290,6 @@ void * _sbrk(ptrdiff_t incr)
 
 static void sid_thread_entry(void *pv)
 {
-     app_uart_init();
-
     sid_error_t ret_code = sid_pal_storage_kv_init();
     if (ret_code != SID_ERROR_NONE) {
         TL_LOG_D("Sidewalk KV store init failed err: %d", ret_code);
@@ -325,6 +323,9 @@ static void sid_thread_entry(void *pv)
 
     while (1) {
         sid_cli_process();
+        #if (TLKAPI_DEBUG_ENABLE)
+        tlkapi_debug_handler();
+        #endif
     }
 }
 

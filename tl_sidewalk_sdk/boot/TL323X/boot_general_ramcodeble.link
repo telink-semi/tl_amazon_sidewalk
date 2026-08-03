@@ -39,15 +39,14 @@ SECTIONS
     PROVIDE (_RETENTION_RESET_VMA_END = .); 
     
    . = ALIGN(8);
+    PROVIDE (_RETENTION_RAM_DATA_BLE_VMA_START = .);
     .ram_data_ble  (NOLOAD)   : 
         {
             KEEP(*(.ram_data_ble ))
             . = ALIGN(8); 
          }
-    PROVIDE (_RETENTION_RAM_DATA_BLE_VMA_START = ADDR(.ram_data_ble));
     PROVIDE (_RETENTION_RAM_DATA_BLE_VMA_END = .); 
-    PROVIDE (_RETENTION_RAM_DATA_BLE_SIZE = SIZEOF(.ram_data_ble));
-    
+
     . = ALIGN(8);
     .ram_code_ble    : AT( ALIGN(LOADADDR (.retention_reset) + SIZEOF (.retention_reset),8)) 
     { KEEP(*(.ram_code_ble )) }
